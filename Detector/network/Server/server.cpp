@@ -24,10 +24,6 @@ void *Server::BeginServer(void)
 
 	buf = new char[1024];
 
-	/*Initiate the read, write, except structs */
-	FD_ZERO(&readfds);
-	FD_ZERO(&writefds);
-	FD_ZERO(&exceptfds);
 
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
@@ -35,10 +31,6 @@ void *Server::BeginServer(void)
 	    exit(1);
         }
 
-	my_addr.sin_family = AF_INET;         /* host byte order */
-	my_addr.sin_port = htons(MYPORT);     /* short, network byte order */
-	my_addr.sin_addr.s_addr = INADDR_ANY; /* auto-fill with my IP */
-	bzero(&(my_addr.sin_zero), 8);        /* zero the rest of the struct */
 
 	if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) \
 								      == -1) {
@@ -51,84 +43,9 @@ void *Server::BeginServer(void)
 	    exit(1);
         }
 
-	max_fd = sockfd;
-	FD_SET(sockfd, &readfds); /*Add sock_fd to the set of file descriptors to read from */
-	FD_ZERO(&readfds);
-	FD_ZERO(&writefds);
-	FD_ZERO(&exceptfds);
-
-	for(j=sockfd;j<=max_fd;j++){
-		FD_SET(j,&readfds);
-		printf ("Setup fd number %d \n",j);
+	if ((new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size)) == -1) {
+		usleep(100);
 	}
-
-	while(1) {
-
-	    gettimeofday(&measure_tv_before,&measure_tz_before);
-	    tv.tv_sec = 5;
-	    if ((sock = select(max_fd+1 , &readfds, &writefds, &exceptfds, &tv)) < 0) {
-	       perror("Nothing changed fds");
-	       continue;
-	    	    }
-
-
-	    printf("Sock value is (after select numbers) :%d \n",sock);
-
-		if(FD_ISSET(sockfd, &readfds)){
-
-			if ((new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size)) == -1) {
-				usleep(100);
-				perror("accept error\n");
-				continue;
-			}
-			else{
-				printf("new accept\n");
-				SendMessage(sock_to_read, "I'm a RaspberryServer\n");
-
-				//recv(sock_to_read, buf, 1024, 0);
-				ReuqestWhoisyou(new_fd);
-
-			}
-
-			max_fd = new_fd;
-			printf("server: got connection from %s\n", inet_ntoa(their_addr.sin_addr));
-			FD_SET(new_fd, &readfds);
-			FD_CLR(sockfd, &readfds);
-			//printf("Ending the connect function %ld, %ld\n",tv.tv_sec,tv.tv_usec);
-
-		}
-		else {
-		    /*Check which FD are set */
-		    for (j=sockfd;j<=max_fd && sock > 0;j++){	/*The loop starts from the first comm fd */
-			    //printf("Checking now j=%d, readfs(j) status =%d \n", j, FD_ISSET(j, &readfds));
-			    if (FD_ISSET(j, &readfds) == 1 ) {
-					sock_to_read = j;
-
-					if ((numbytes=recv(sock_to_read, buf, 1024, 0)) == -1){
-						perror("recv");
-						exit(1);
-					}
-					else
-						TranslateMsg(sock_to_read);
-
-					buf[numbytes] = '\0';
-					printf("\nrecv: sock=%d, buf=%s \n", sock,buf);
-
-/*
-					if (send(sock_to_read , "\n I'm a RaspberryServer", 25, 0) == -1)
-						perror("error in sending\n");*/
-
-					FD_CLR(sock_to_read, &readfds);
-					sock--; /* We found one fd that was changed form select	*/
-					for(j=sockfd;j<=max_fd;j++)
-						FD_SET(j,&readfds);
-				}
-		    }
-	    }
-
-	}
-	close(new_fd);
-
 
 }
 
