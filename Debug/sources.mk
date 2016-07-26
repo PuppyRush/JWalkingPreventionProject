@@ -27,4 +27,5 @@ Detector \
 Detector/device \
 Detector/network/Client \
 Detector/network/Server \
+Detector/network \
 

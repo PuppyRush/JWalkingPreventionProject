@@ -7,7 +7,7 @@
 
 #include "main.h"
 
-pthread_t client_th,server_th;
+
 
 int main(int argc, char** argv){
 
@@ -67,7 +67,14 @@ int main(int argc, char** argv){
 
 	/////주변 라즈베리 탐색
 
-	pthread_create(&server_th, NULL, server, NULL);
+/*	Client client;
 
+		pthread_create(&server_th, NULL, &Client::getBeginClient , &client);*/
 
+	Server server;
+	pthread_create(&server_th, NULL, &Server::getBeginServer , &server);
+
+	while(1){
+
+	}
 }

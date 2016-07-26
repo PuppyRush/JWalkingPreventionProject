@@ -1,10 +1,7 @@
 #include "server.h"
 
-#define MYPORT 3456    	/* the port users will be connecting to */
-#define MAXDATASIZE 100	/*The maximum message passed */
-#define BACKLOG 10     	/* how many pending connections queue will hold */
 
-void *server(void *)
+void *Server::BeginServer(void)
     {
    struct 	sockaddr_in 	my_addr;    			/*My address information 			   */
 	struct 	sockaddr_in 	their_addr; 			/*Connector's address information 	           */
@@ -23,8 +20,9 @@ void *server(void *)
 	int			sock;
 	int			sock_to_read;			/* File descriptor ready for reading		   */
 	int			max_fd;				/* Number of socket fd that are in use		   */
-	char                    buf[MAXDATASIZE];       	/*The string to be passed 			   */
+	char        *buf;       	/*The string to be passed 			   */
 
+	buf = new char[1024];
 
 	/*Initiate the read, write, except structs */
 	FD_ZERO(&readfds);
@@ -64,57 +62,61 @@ void *server(void *)
 		printf ("Setup fd number %d \n",j);
 	}
 
-	while(1) {  /* main accept() loop */
-		/*--------------------------------------*/
-		/* Initiate the FD vector & set values	*/
-		/*--------------------------------------*/
+	while(1) {
 
 	    gettimeofday(&measure_tv_before,&measure_tz_before);
-	    printf("Before select ...time is: %ld, %ld\n",tv.tv_sec,tv.tv_usec);
-	    tv.tv_sec = 5; 		/*Initiate time to wait for fd to change */
-
+	    tv.tv_sec = 5;
 	    if ((sock = select(max_fd+1 , &readfds, &writefds, &exceptfds, &tv)) < 0) {
-	       perror("select");
+	       perror("Nothing changed fds");
 	       continue;
 	    	    }
 
-	    gettimeofday(&measure_tv_after,&measure_tz_after);
-	    printf("After select again...time in select:  %ld sec and %ld usec\n", \
-			measure_tv_after.tv_sec - measure_tv_before.tv_sec ,measure_tv_after.tv_usec - measure_tv_before.tv_usec);
-	    printf("Sock value is (after select) :%d \n",sock);
 
-	    /*Checking which FD are set */
+	    printf("Sock value is (after select numbers) :%d \n",sock);
 
-		if(FD_ISSET(sockfd, &readfds)){ /* If sockfd is changed, new conenciton is requested */
-					    /* Reading and writing is done to other fds		 */
+		if(FD_ISSET(sockfd, &readfds)){
+
 			if ((new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size)) == -1) {
-				perror("accept");
+				usleep(100);
+				perror("accept error\n");
 				continue;
 			}
+			else{
+				printf("new accept\n");
+				SendMessage(sock_to_read, "I'm a RaspberryServer\n");
+
+				//recv(sock_to_read, buf, 1024, 0);
+				ReuqestWhoisyou(new_fd);
+
+			}
+
 			max_fd = new_fd;
-			printf("server: got connection from %s\n", \
-					inet_ntoa(their_addr.sin_addr));
-			FD_SET(new_fd, &readfds); /*Add sock_fd to the set of file descriptors to read from */
-			FD_CLR(sockfd, &readfds); /*Add sock_fd to the set of file descriptors to read from */
-			printf("Ending the connect function %ld, %ld\n",tv.tv_sec,tv.tv_usec);
+			printf("server: got connection from %s\n", inet_ntoa(their_addr.sin_addr));
+			FD_SET(new_fd, &readfds);
+			FD_CLR(sockfd, &readfds);
+			//printf("Ending the connect function %ld, %ld\n",tv.tv_sec,tv.tv_usec);
+
 		}
 		else {
 		    /*Check which FD are set */
 		    for (j=sockfd;j<=max_fd && sock > 0;j++){	/*The loop starts from the first comm fd */
-			    printf("Checking now j=%d, readfs(j) status =%d \n", j, FD_ISSET(j, &readfds));
+			    //printf("Checking now j=%d, readfs(j) status =%d \n", j, FD_ISSET(j, &readfds));
 			    if (FD_ISSET(j, &readfds) == 1 ) {
 					sock_to_read = j;
 
-					if ((numbytes=recv(sock_to_read, buf, MAXDATASIZE, 0)) == -1) {/*Receive info from the server*/
+					if ((numbytes=recv(sock_to_read, buf, 1024, 0)) == -1){
 						perror("recv");
 						exit(1);
 					}
+					else
+						TranslateMsg(sock_to_read);
 
 					buf[numbytes] = '\0';
-					printf("recv: sock=%d, buf=%s \n", sock,buf);
+					printf("\nrecv: sock=%d, buf=%s \n", sock,buf);
 
-					if (send(sock_to_read , "Hello, world!\n", 14, 0) == -1)
-						perror("send in loop");
+/*
+					if (send(sock_to_read , "\n I'm a RaspberryServer", 25, 0) == -1)
+						perror("error in sending\n");*/
 
 					FD_CLR(sock_to_read, &readfds);
 					sock--; /* We found one fd that was changed form select	*/
@@ -129,3 +131,95 @@ void *server(void *)
 
 
 }
+
+
+bool Server::TranslateMsg(int sockfd){
+
+	char buf[1024]={0};
+
+	HEADER h;
+	memcpy(&h, buf, sizeof(HEADER));
+
+	switch(h.msgIdx){
+
+		case SEND_FIRST_MESSAGE:{
+
+			printf("recv SEND_FIRST_MESSAGE OF SERVER\n");
+
+			if(h.who == RASPB){
+				rsock.isConnected = true;
+				rsock.sockfd = sockfd;
+				rsock.who = RASPB;
+			}
+			else if(h.who == MONITOR){
+				msock.isConnected = true;
+				msock.sockfd = sockfd;
+				msock.who = MONITOR;
+			}
+
+
+			break;
+		}
+		case SEND_CLIENT_MESSAGE:{
+
+			ON_MESSAGE str;
+
+			memcpy(&str, &buf[sizeof(HEADER)] , h.body_str_size);
+			char *msg = new char[str.msgLen];
+			memcpy(&msg, &str.msg, str.msgLen);
+			printf("%s\n", msg);
+			break;
+		}
+
+	}
+
+	usleep(10);
+
+	return true;
+}
+
+
+
+bool Server::ReuqestWhoisyou(int sockfd){
+
+	SEND_REQ_INFORMATION str;
+	str.hd.msgIdx=REQ_FIRST_MESSAGE;
+	str.hd.who = RASPB;
+	str.hd.body_str_size = 0;
+
+	if(send(sockfd , (char*)&str, sizeof(str), 0) >0){
+		printf("send REQ_FIRST_MESSAGE\n");
+		return true;
+	}
+	else
+		return false;
+	usleep(10);
+
+}
+
+bool Server::SendMessage(int sockfd, char* msg){
+
+	HEADER h;
+	h.msgIdx = SEND_SERVER_MESSAGE;
+	h.who = RASPB;
+
+	SEND_MESSAGE str;
+	str.hd = h;
+	str.msgLen = strlen(msg);
+	str.msg = msg;
+
+	h.body_str_size = sizeof(str);
+
+	if(send(sockfd, (char*)&str, sizeof(str), 0) <=0 ){
+		perror("fail send message");
+		return false;
+	}
+	else
+		return true;
+
+	return true;
+
+	usleep(10);
+}
+
+
