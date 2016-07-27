@@ -17,7 +17,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include "../network.h"
+#include "../../network/network.h"
 
 
 #endif /* DETECTOR_NETWORK_CLIENT_CLIENT_H_ */

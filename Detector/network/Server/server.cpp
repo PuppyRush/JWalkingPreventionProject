@@ -1,58 +1,82 @@
-#include "server.h"
+#include "../../network/Server/server.h"
 
 
 void *Server::BeginServer(void)
     {
    struct 	sockaddr_in 	my_addr;    			/*My address information 			   */
 	struct 	sockaddr_in 	their_addr; 			/*Connector's address information 	           */
-	struct 	timeval 	tv;				/*The time wait for socket to be changed	   */
-	struct 	timezone	tz;				/*The time zone we are using 			   */
-	struct 	timeval 	measure_tv_before;		/*The time wait for socket to be changed	   */
-	struct 	timezone	measure_tz_before;		/*The time zone we are using 			   */
-	struct 	timeval 	measure_tv_after;		/*The time wait for socket to be changed	   */
-	struct 	timezone	measure_tz_after;		/*The time zone we are using 			   */
-	fd_set 			readfds, writefds, exceptfds; 	/*File descriptors for read, write and exceptions  */
 	int 			new_fd;  			/*The new file descriptor returned from accept	   */
 	int 			sockfd;  			/*The first file descriptor given for communication*/
-	int			j;				/*Index used for fd counter			   */
 	socklen_t 			sin_size;			/*Size of struct internet input address		   */
-	int			numbytes;			/* Number of bytes received in each packet         */
-	int			sock;
-	int			sock_to_read;			/* File descriptor ready for reading		   */
-	int			max_fd;				/* Number of socket fd that are in use		   */
 	char        *buf;       	/*The string to be passed 			   */
 
 	buf = new char[1024];
-
-
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 	    perror("socket");
 	    exit(1);
         }
 
+	my_addr.sin_family = AF_INET;         /* host byte order */
+	my_addr.sin_port = htons(MYPORT);     /* short, network byte order */
+	my_addr.sin_addr.s_addr = INADDR_ANY; /* auto-fill with my IP */
+	bzero(&(my_addr.sin_zero), 8);        /* zero the rest of the struct */
 
-	if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) \
-								      == -1) {
+	if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1) {
 	    perror("bind");
 	    exit(1);
         }
+	else
+		printf("succ_bind\n");
 
 	if (listen(sockfd, BACKLOG) == -1) {
 	    perror("listen");
 	    exit(1);
         }
+	else
+		printf("succ_listen\n");
 
-	if ((new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size)) == -1) {
+	while(1){
+		if ((new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size)) >0){
+			printf("succ_accept\n");
+			pthread_t sock_th;
+			THREAD_SERVER_PARAMETER *par = (THREAD_SERVER_PARAMETER *) malloc(sizeof(THREAD_SERVER_PARAMETER));
+			par->context = new Server;
+			par->sockfd = new_fd;
+			pthread_create(&sock_th, NULL, &Server::getReceive , (void *)par);
+			usleep(100);
+		}
+		else{
+
+
+		}
+
 		usleep(100);
 	}
 
 }
 
+void *Server::Receive(int sockfd){
 
-bool Server::TranslateMsg(int sockfd){
+	int recv_bytes;
 
-	char buf[1024]={0};
+	while(true){
+
+		char *buf = new char[MAX_BUF];
+
+		if ((recv_bytes = recv(sockfd, buf, MAX_BUF, 0)) >0){
+			printf("suc");
+			TranslateMsg(sockfd, buf);
+			usleep(50);
+		}
+		else{
+			perror("recv error");
+			//exit(1);
+		}
+	}
+}
+
+bool Server::TranslateMsg(int sockfd, char* buf){
 
 	HEADER h;
 	memcpy(&h, buf, sizeof(HEADER));
@@ -74,7 +98,6 @@ bool Server::TranslateMsg(int sockfd){
 				msock.who = MONITOR;
 			}
 
-
 			break;
 		}
 		case SEND_CLIENT_MESSAGE:{
@@ -82,20 +105,17 @@ bool Server::TranslateMsg(int sockfd){
 			ON_MESSAGE str;
 
 			memcpy(&str, &buf[sizeof(HEADER)] , h.body_str_size);
-			char *msg = new char[str.msgLen];
-			memcpy(&msg, &str.msg, str.msgLen);
+			char *msg = new char[str.msgLen+1];
+			memcpy(msg, &str.msg, str.msgLen);
 			printf("%s\n", msg);
 			break;
 		}
-
 	}
 
 	usleep(10);
 
 	return true;
 }
-
-
 
 bool Server::ReuqestWhoisyou(int sockfd){
 
@@ -116,27 +136,27 @@ bool Server::ReuqestWhoisyou(int sockfd){
 
 bool Server::SendMessage(int sockfd, char* msg){
 
-	HEADER h;
-	h.msgIdx = SEND_SERVER_MESSAGE;
-	h.who = RASPB;
+		int send_size;
+		HEADER h;
+		h.msgIdx = SEND_CLIENT_MESSAGE;
+		h.who = RASPB;
+		h.body_str_size = sizeof(SEND_MESSAGE) - sizeof(HEADER);
 
-	SEND_MESSAGE str;
-	str.hd = h;
-	str.msgLen = strlen(msg);
-	str.msg = msg;
+		int strLen = strlen(msg);
 
-	h.body_str_size = sizeof(str);
+		SEND_MESSAGE str;
+		memset(&str,0,sizeof(SEND_MESSAGE));
+		memcpy(str.msg, msg, strLen );
+		str.msgLen = strLen;
 
-	if(send(sockfd, (char*)&str, sizeof(str), 0) <=0 ){
-		perror("fail send message");
-		return false;
-	}
-	else
-		return true;
+		str.hd = h;
 
-	return true;
+		if(send_size =send(sockfd, (char*)&str, sizeof(str), 0) <=0 ){
+			perror("fail send message");
+			return false;
+		}
+		else
+			return true;
 
-	usleep(10);
 }
-
 

@@ -14,7 +14,10 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include "../Queue.h"
 
+#define MAX_BUF 	1024
+#define MSG_LEN	128
 
 ///////////////////MSG INDEX
 enum SERVER_MSG{
@@ -47,10 +50,16 @@ enum CLINET_MSG{
 	bool isConnected;
 };
 
+struct THREAD_SERVER_PARAMETER{
+	 void* context;
+	 int sockfd;
+
+ };
+
 
 //////////////////////MSG HEADER
 
- struct HEADER{
+struct HEADER{
 
 	int msgIdx;
 	int who;
@@ -67,19 +76,26 @@ struct SEND_REQ_INFORMATION{
  struct SEND_MESSAGE{
  	HEADER hd;
  	int msgLen;
- 	char *msg;
+ 	char msg[MSG_LEN];
+ };
+
+struct SEND_JWALKING_EVENT_SIGNAL{
+	 HEADER hd;
+	 EVENT_SIGNAL event;
+
  };
  ////////////////////FOR RECEIVED STRUCT
 
  struct ON_MESSAGE{
+
  	int msgLen;
- 	char *msg;
+ 	char msg[MSG_LEN];
+
  };
 
 
 
+ char * getIpAddress();
+
 
 #endif /* DETECTOR_NETWORK_H_ */
-
-
-char * getIpAddress();

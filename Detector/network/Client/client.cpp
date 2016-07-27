@@ -1,4 +1,4 @@
-#include "client.h"
+#include "../../network/Client/client.h"
 
 
 #define PORT 3456    /* the port client will be connecting to */
@@ -30,18 +30,11 @@ void *Client::BeginClient(void){
 	    //exit(1);
         }
 	else{
+		SendMessage(sockfd, "Hi Server, I'm a RASPB.\n");
 		printf("succ_connection_of_raspb.\n");
 	}
 	while (1) {
 
-//		if(initConn)
-
-		/*if (send(sockfd, "Hello, world!\n", 14, 0) == -1){
-	      perror("send");
-	      exit (1);
-		}
-		printf("After the send function \n");
-*/
 
 		char buf[sizeof(HEADER)]={0};
 
@@ -52,12 +45,6 @@ void *Client::BeginClient(void){
 		else{
 			TranslateMsg(sockfd, buf);
 		}
-
-		buf[numbytes] = '\0';
-
-		printf("Received in pid=%d, text=: %s. \n",getpid(), buf);
-			sleep(1);
-
 	}
 
 	close(sockfd);
@@ -74,9 +61,9 @@ bool Client::TranslateMsg(int sockfd, char* buf){
 
 		case REQ_FIRST_MESSAGE:{
 
-			SendMessage(sockfd, "Hi Server, I'm a RASPB.\n");
 
-			printf("\nrecv REQUEST_INFORMATION_MSG.\n");
+
+			printf("recv REQ_FIRST_MESSAGE OF CLIENT.\n");
 
 			if(h.who == RASPB){
 				rsock.sockfd = sockfd;
@@ -89,7 +76,7 @@ bool Client::TranslateMsg(int sockfd, char* buf){
 				msock.who = MONITOR;
 			}
 			else{
-				fprintf(stderr,"\nI DONT KNOW WHO IS HE (%d).\n", h.who);
+				fprintf(stderr,"I DONT KNOW WHO IS HE (%d).\n", h.who);
 			}
 
 			HEADER h_;
@@ -128,24 +115,27 @@ bool Client::TranslateMsg(int sockfd, char* buf){
 
 bool Client::SendMessage(int sockfd, char* msg){
 
+
+	int send_size;
 	HEADER h;
 	h.msgIdx = SEND_CLIENT_MESSAGE;
 	h.who = RASPB;
 
+	int strLen = strlen(msg);
+
 	SEND_MESSAGE str;
+	memset(&str,0,sizeof(SEND_MESSAGE));
+	memcpy(str.msg, msg, strLen );
+	str.msgLen = strLen;
+
 	str.hd = h;
-	str.msgLen = sizeof(msg);
-	str.msg = msg;
 
-	h.body_str_size = sizeof(str);
+	h.body_str_size = sizeof(str) - sizeof(HEADER);
 
-	if(send(sockfd, (char*)&str, sizeof(str), 0) <=0 ){
+	if(send_size =send(sockfd, (char*)&str, sizeof(str), 0) <=0 ){
 		perror("fail send message");
 		return false;
 	}
 	else
 		return true;
-
-
 }
-

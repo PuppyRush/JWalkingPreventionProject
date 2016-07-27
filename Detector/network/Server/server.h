@@ -20,7 +20,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-#include "../network.h"
+#include "../../network/network.h"
 
 #endif /* DETECTOR_NETWORK_SERVER_SERVER_H_ */
 
@@ -40,7 +40,15 @@ class Server{
 
 		void *BeginServer(void);
 		static void* getBeginServer(void *con){ return ((Server *)con)->BeginServer();}
-		bool TranslateMsg(int sockfd);
+		void *Receive(int sockfd);
+		static void* getReceive(void* th){
+			THREAD_SERVER_PARAMETER *str = (THREAD_SERVER_PARAMETER *)th;
+			return ( (Server *)str->context)->Receive( str->sockfd );
+		}
+		void *CheckQueue(void);
+		static void* getCheckQueue(void *con){ return ((Server *)con)->CheckQueue();}
+
+		bool TranslateMsg(int sockfd, char* buf);
 		bool ReuqestWhoisyou(int sockfd);
 		bool SendMessage(int sockfd, char* msg);
 

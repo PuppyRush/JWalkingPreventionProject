@@ -6,7 +6,7 @@
  *      Author: cmk
  */
 
-#include "network.h"
+#include "../network/network.h"
 
 
 char* getIpAddress(){
