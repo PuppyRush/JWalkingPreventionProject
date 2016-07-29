@@ -24,8 +24,9 @@ C_DEPS :=
 # Every subdirectory with source files must be described here
 SUBDIRS := \
 Detector \
+Detector/detector \
 Detector/device \
-Detector/network/Client \
-Detector/network/Server \
+Detector/network/client \
 Detector/network \
+Detector/network/server \
 

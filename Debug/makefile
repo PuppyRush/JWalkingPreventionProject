@@ -8,10 +8,11 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include Detector/network/Server/subdir.mk
--include Detector/network/Client/subdir.mk
+-include Detector/network/server/subdir.mk
+-include Detector/network/client/subdir.mk
 -include Detector/network/subdir.mk
 -include Detector/device/subdir.mk
+-include Detector/detector/subdir.mk
 -include Detector/subdir.mk
 -include subdir.mk
 -include objects.mk
@@ -48,7 +49,7 @@ all: JWalkingPrevetionProject
 JWalkingPrevetionProject: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ -L/usr/local/include/libusb-1.0 -o "JWalkingPrevetionProject" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L/usr/local/include/libusb-1.0 -L/usr/local/lib -o "JWalkingPrevetionProject" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 

@@ -50,11 +50,6 @@ enum CLINET_MSG{
 	bool isConnected;
 };
 
-struct THREAD_SERVER_PARAMETER{
-	 void* context;
-	 int sockfd;
-
- };
 
 
 //////////////////////MSG HEADER

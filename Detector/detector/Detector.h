@@ -28,6 +28,17 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <assert.h>
+#include "DetectLine.h"
+#include "../Queue.h"
+
+
+struct THREAD_DETECTOR_BEGIN_PARAMETER{
+
+	void* context;
+	Queue *q;
+	int frame_step;
+
+};
 
 template<class T>
 class TypedMat
@@ -106,19 +117,32 @@ using namespace cv;
 
 class Detector{
 
-	public:
+	private:
+		Queue *eventQ;
+		int frame_step;
+		bool isActivitedCam;
+		String filePath;
+		string windowName;
+		static const unsigned usec_per_sec = 1000000;
+		static const unsigned usec_per_msec = 1000;
+		struct timeval startTime, endTime;
+		struct timezone tz;
+
 
 	public:
 
-		Tracker();
-		~Tracker();
+		Detector(String filepath){filePath = filepath; isActivitedCam = false; windowName = "Detector"; eventQ	= NULL;}
+		Detector(){isActivitedCam = true; windowName = "Detector"; eventQ = NULL;}
+		~Detector(){;}
 
 		bool QueryPerformanceFrequency(int64_t *frequency);
 		bool QueryPerformanceCounter(int64_t *performance_count);
-		bool BeginDectect();
-		void detect_hog_inria(VideoCapture *vc);
-		void detect_hog_daimler(VideoCapture *vc);
-		void detect_hogcascades(VideoCapture *vc);
-		void detect_haarcascades(VideoCapture *vc);
+		void *BeginDectect(Queue *q, int );
+		static void* getBeginDectect(void* th){
+			THREAD_DETECTOR_BEGIN_PARAMETER *str = (THREAD_DETECTOR_BEGIN_PARAMETER *)th;
+			return ( (Detector *)str->context)->BeginDectect(str->q, str->frame_step);
+		}
+
+		bool detect_haarcascades(VideoCapture *vc);
 
 };

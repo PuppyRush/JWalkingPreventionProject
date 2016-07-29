@@ -11,7 +11,21 @@
 
 int main(int argc, char** argv){
 
-	///////주변장치 연결확인
+	if(argc < 3 || argc > 4){
+		fprintf(stderr, "\n매개변수를 확인하세요\n1.$(모니터 IP)  2.($상대 라즈베리IP) \n"
+		"3.($파일을 읽어서 영상처리 테스트할경우 파일 전체경로. default=CAM )  4.($건너띌 프레임 수(default=2))\n");
+		return 0;
+	}
+
+	char *monip = argv[1];
+	char *rasIp = argv[2];
+	char *filePath = argv[3];
+	int frame_step = 2;
+	if(argv[4]!=NULL){
+		frame_step = atoi(argv[4]);
+	}
+
+///////주변장치 연결확인
 
 	printf("\n주변장치와 연결여부를 확인합니다...\m");
 
@@ -65,16 +79,38 @@ int main(int argc, char** argv){
 		}
 	}
 
-	/////주변 라즈베리 탐색
+/////모든 클래스에서 사용 할 EventQueue 생성(공유하게됨)
+	Queue eventQ;
 
-/*	Client client;
+/////클라이언트 접속하기
 
-		pthread_create(&server_th, NULL, &Client::getBeginClient , &client);*/
+
+
+/////주변 라즈베리 탐색
+
+	pthread_t server_th, detctor_th;
 
 	Server server;
-	pthread_create(&server_th, NULL, &Server::getBeginServer , &server);
+	THREAD_SERVER_BEGIN_PARAMETER th_str;
+	th_str.context = (void *)&server;
+	th_str.q = &eventQ;
 
-	while(1){
+	pthread_create(&server_th, NULL, &Server::getBeginServer , &th_str);
 
-	}
+
+
+
+
+////////////
+	Detector dect;
+	THREAD_DETECTOR_BEGIN_PARAMETER th_str_detector;
+	th_str_detector.context = (void *)&dect;
+	th_str_detector.q = &eventQ;
+
+	pthread_create(&detctor_th, NULL, &Detector::getBeginDectect , &th_str_detector);
+
+	pthread_join(server_th, NULL);
+	pthread_join(detctor_th, NULL);
+
+//////////
 }

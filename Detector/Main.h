@@ -12,10 +12,11 @@
 #include <pthread.h>
 #include "device/ConfirmDevice.h"
 #include "device/ConnectDevice.h"
-#include "network/Server/server.h"
-#include "network/Client/client.h"
 #include "detector/Detector.h"
+#include "network/client/client.h"
+#include "network/server/server.h"
+
+
+
 
 #endif /* DETECTOR_DETECTRACKER_H_ */
-
-pthread_t client_th,server_th;
