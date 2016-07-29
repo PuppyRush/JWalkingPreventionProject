@@ -7,15 +7,11 @@
 
 #include "Queue.h"
 
-Queue::Queue()
-{
-    front = 0;
-    rear = 0;
-    count =0;
-}
-Queue::~Queue(){}
 
-bool Queue::Put(EVENT_SIGNAL _d)
+
+
+template <typename T>
+bool Queue<T>::Put(T _d)
 {
     if ((rear + 1) % MAX == front)
     {
@@ -28,8 +24,8 @@ bool Queue::Put(EVENT_SIGNAL _d)
     return true;
 }
 
-
-bool Queue::Get(EVENT_SIGNAL &_d)
+template <typename T>
+bool Queue<T>::Get(T &_d)
 {
     if (front == rear)
     {
@@ -43,7 +39,8 @@ bool Queue::Get(EVENT_SIGNAL &_d)
 
 }
 
-bool Queue::IsEmpty(){
+template <typename T>
+bool Queue<T>::IsEmpty(){
 
 	if(count==0)
 		return true;

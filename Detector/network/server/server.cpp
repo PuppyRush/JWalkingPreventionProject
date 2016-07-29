@@ -1,7 +1,7 @@
 #include "../server/server.h"
 
 
-void *Server::BeginServer(Queue *q)
+void *Server::BeginServer(Queue<EVENT_SIGNAL> *q)
     {
    struct 	sockaddr_in 	my_addr;    			/*My address information 			   */
 	struct 	sockaddr_in 	their_addr; 			/*Connector's address information 	           */

@@ -8,20 +8,22 @@
 #ifndef DETECTOR_NETWORK_CLIENT_NETWORKTORASPB_H_
 #define DETECTOR_NETWORK_CLIENT_NETWORKTORASPB_H_
 
-#include "client.h"
+#include "../network.h"
 
 class NetworkToRaspb {
+
 
 	public:
 
 		SocketInfo msock;
 
 	public:
-		NetworkToRaspb();
-		virtual ~NetworkToRaspb();
 
-		void *BeginForRaspb(void);
-		static void* getBeginForRaspb(void *con){ return ((NetworkToRaspb *)con)->BeginForRaspb();}
+		void *BeginForRaspb(Queue<EVENT_SIGNAL> *q);
+		static void* getBeginForRaspb(void* th){
+			THREAD_CLIENT_BEGIN_PARAMETER *str = (THREAD_CLIENT_BEGIN_PARAMETER *)th;
+			return ( (NetworkToRaspb *)str->context)->BeginForRaspb( str->q );
+		}
 		bool TranslateMsg(int sockfd, char* buf);
 		bool SendMessage(int sockfd, char* msg);
 

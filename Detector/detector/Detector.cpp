@@ -40,7 +40,7 @@ bool Detector::QueryPerformanceCounter(int64_t *performance_count)
     return true;
 }
 
-void *Detector::BeginDectect(Queue *q, int frame_step)
+void *Detector::BeginDectect(Queue<EVENT_SIGNAL> *q, int frame_step)
 {
 	this->frame_step = frame_step;
 	eventQ = q;

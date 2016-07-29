@@ -8,22 +8,23 @@
 #ifndef DETECTOR_NETWORK_CLIENT_NETWORKTOMONITOR_H_
 #define DETECTOR_NETWORK_CLIENT_NETWORKTOMONITOR_H_
 
-#include "client.h"
-
-
+#include "../network.h"
 
 class NetworkToMonitor {
+
 
 	public:
 
 		SocketInfo rsock;
 
 	public:
-		NetworkToMonitor();
-		virtual ~NetworkToMonitor();
 
-		void *BeginForMonitor(void);
-		static void* getBeginForMonitor(void *con){ return ((NetworkToMonitor *)con)->BeginForMonitor();}
+		void *BeginForMonitor(Queue<EVENT_SIGNAL> *q);
+		static void* getBeginForMonitor(void* th){
+			THREAD_CLIENT_BEGIN_PARAMETER *str = (THREAD_CLIENT_BEGIN_PARAMETER *)th;
+			return ( (NetworkToMonitor *)str->context)->BeginForMonitor( str->q );
+		}
+
 		bool TranslateMsg(int sockfd, char* buf);
 		bool SendMessage(int sockfd, char* msg);
 

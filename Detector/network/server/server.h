@@ -21,7 +21,7 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include "../../network/network.h"
-#include "../../Queue.h"
+
 
 struct THREAD_SERVER_PARAMETER{
 	 void* context;
@@ -32,21 +32,16 @@ struct THREAD_SERVER_PARAMETER{
 struct THREAD_SERVER_BEGIN_PARAMETER{
 
 	void* context;
-	Queue *q;
+	Queue<EVENT_SIGNAL> *q;
 
 };
-
-#define MYPORT 3456    	/* the port users will be connecting to */
-#define MAXDATASIZE 100	/*The maximum message passed */
-#define BACKLOG 10     	/* how many pending connections queue will hold */
-
 
 
 class Server{
 
 
 	private:
-		Queue *eventQ;
+		Queue<EVENT_SIGNAL> *eventQ;
 		SocketInfo rsock, msock;
 
 	public:
@@ -55,7 +50,7 @@ class Server{
 			eventQ = NULL;
 		}
 
-		void *BeginServer(Queue *q);
+		void *BeginServer(Queue<EVENT_SIGNAL> *q);
 		static void* getBeginServer(void* th){
 			THREAD_SERVER_BEGIN_PARAMETER *str = (THREAD_SERVER_BEGIN_PARAMETER *)th;
 			return ( (Server *)str->context)->BeginServer(str->q);

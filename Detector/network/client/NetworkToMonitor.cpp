@@ -8,18 +8,7 @@
 #include "NetworkToMonitor.h"
 
 
-NetworkToMonitor::NetworkToMonitor() {
-	// TODO Auto-generated constructor stub
-
-}
-
-NetworkToMonitor::~NetworkToMonitor() {
-	// TODO Auto-generated destructor stub
-}
-
-
-void *NetworkToMonitor::BeginForMonitor(void){
-
+void *NetworkToMonitor::BeginForMonitor(Queue<EVENT_SIGNAL> *q){
 
 
 	int sockfd, numbytes;
@@ -29,7 +18,7 @@ void *NetworkToMonitor::BeginForMonitor(void){
 
 	he=gethostbyname("localhost");
 
-	if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) == -1) {
+	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 	    perror("socket");
 	    exit(1);
 	}
@@ -54,20 +43,41 @@ void *NetworkToMonitor::BeginForMonitor(void){
 	while (1) {
 
 
-		char buf[sizeof(HEADER)]={0};
 
-		if ((numbytes=recv(sockfd, buf, sizeof(HEADER), 0)) == -1) {
-			perror("nothing recv.");
-			//exit(1);
-		}
-		else{
-			TranslateMsg(sockfd, buf);
-		}
 	}
 
-	close(sockfd);
+/*
 
-	return 0;
+	 int   sock;
+	   int   server_addr_size;
+
+	   struct sockaddr_in   server_addr;
+	   char buf[MAX_BUF]={0};
+	   char   buff_rcv[100];
+
+	   sprintf(buf,"asdsdasda");
+
+	   sock  = socket( PF_INET, SOCK_DGRAM, 0);
+
+	   if( -1 == sock)
+	   {
+	      printf( "socket 생성 실패n");
+	      exit( 1);
+	   }
+
+	   memset( &server_addr, 0, sizeof( server_addr));
+	   server_addr.sin_family     = AF_INET;
+	   server_addr.sin_port       = htons( MONITOR_PORT);
+	   server_addr.sin_addr.s_addr= inet_addr( "127.0.0.1");
+		while(true){
+			   sendto( sock, buf, strlen( buf )+1, 0,    // +1: NULL까지 포함해서 전송
+				    ( struct sockaddr*)&server_addr, sizeof( server_addr));
+		}
+
+	   close( sock);*/
+
+
+
 }
 
 bool NetworkToMonitor::TranslateMsg(int sockfd, char* buf){

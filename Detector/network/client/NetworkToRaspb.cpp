@@ -8,9 +8,7 @@
 #include "NetworkToRaspb.h"
 
 
-void *NetworkToRaspb::BeginForRaspb(void){
-
-
+void *NetworkToRaspb::BeginForRaspb(Queue<EVENT_SIGNAL> *q){
 
 	int sockfd, numbytes;
 	struct hostent *he;
@@ -25,7 +23,7 @@ void *NetworkToRaspb::BeginForRaspb(void){
 	}
 
 	their_addr.sin_family = AF_INET;      /* host byte order */
-	their_addr.sin_port = htons(MONITOR_PORT);    /* short, network byte order */
+	their_addr.sin_port = htons(RASPB_PORT);    /* short, network byte order */
 	their_addr.sin_addr = *((struct in_addr *)he->h_addr);
 	bzero(&(their_addr.sin_zero), 8);     /* zero the rest of the struct */
 

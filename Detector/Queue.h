@@ -21,25 +21,35 @@ struct EVENT_SIGNAL{
 };
 
 
+struct IMAGE{
+
+	char image[1024];
+
+};
+
+template <typename T>
 class Queue
 {
 	private:
 
-	    EVENT_SIGNAL queue[MAX];
+	    T queue[MAX];
 	    int front;
 	    int rear;
 	    int count;
 
 	public :
-	    static Queue eventQ;
+	    static T eventQ;
 
 	public :
 
-	    Queue();
-	    ~Queue();
+	    Queue(){
+		    front = 0;
+	      rear = 0;
+	      count =0;
+	    	    }
 
-	    bool Put(EVENT_SIGNAL);  //항목을 기억공간에 저장할 함수.
-	    bool Get(EVENT_SIGNAL &); //저장된 항목을 꺼내기 위한 함수.
+	    bool Put(T);  //항목을 기억공간에 저장할 함수.
+	    bool Get(T &); //저장된 항목을 꺼내기 위한 함수.
 	    bool IsEmpty();
 
 };

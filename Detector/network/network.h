@@ -13,11 +13,21 @@
 #include <ifaddrs.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <stdlib.h>
 #include <arpa/inet.h>
+#include <errno.h>
+#include <netdb.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>
 #include "../Queue.h"
 
 #define MAX_BUF 	1024
 #define MSG_LEN	128
+#define RASPB_PORT	9191
+#define MONITOR_PORT 9090 /* the port client will be connecting to */
+#define MYPORT 9191
+#define BACKLOG 10     	/* how many pending connections queue will hold */
 
 ///////////////////MSG INDEX
 enum SERVER_MSG{
@@ -50,6 +60,12 @@ enum CLINET_MSG{
 	bool isConnected;
 };
 
+ struct THREAD_CLIENT_BEGIN_PARAMETER{
+
+ 	void* context;
+ 	Queue<EVENT_SIGNAL> *q;
+
+ };
 
 
 //////////////////////MSG HEADER
