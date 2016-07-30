@@ -28,16 +28,15 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <assert.h>
+
 #include "DetectLine.h"
 #include "../Queue.h"
-
+#include "../network/client/NetworkToMonitor.h"
 
 struct THREAD_DETECTOR_BEGIN_PARAMETER{
-
 	void* context;
-	Queue<EVENT_SIGNAL> *q;
 	int frame_step;
-
+	NTM* ntm;
 };
 
 template<class T>
@@ -114,11 +113,11 @@ void TypedMat<T>::Attach(const IplImage& m)
 
 using namespace cv;
 
-
 class Detector{
 
 	private:
-		Queue<EVENT_SIGNAL> *eventQ;
+
+		NTM *ntm;
 		int frame_step;
 		bool isActivitedCam;
 		String filePath;
@@ -132,28 +131,30 @@ class Detector{
 	public:
 
 		Detector(String filepath){
+
 			filePath = filepath;
 			isActivitedCam = false;
 			windowName = "Detector";
-			eventQ	= NULL;
+
 			frame_step = 2;
 		}
 		Detector(){
+
 			isActivitedCam = true;
 			windowName = "Detector";
-			eventQ = NULL;
+
 			frame_step = 2;
 		}
 		~Detector(){;}
 
 		bool QueryPerformanceFrequency(int64_t *frequency);
 		bool QueryPerformanceCounter(int64_t *performance_count);
-		void *BeginDectect(Queue<EVENT_SIGNAL> *q, int );
+		void *BeginDectect(int step, NetworkToMonitor *ntm);
 		static void* getBeginDectect(void* th){
 			THREAD_DETECTOR_BEGIN_PARAMETER *str = (THREAD_DETECTOR_BEGIN_PARAMETER *)th;
-			return ( (Detector *)str->context)->BeginDectect(str->q, str->frame_step);
+			return ( (Detector *)str->context)->BeginDectect(str->frame_step, (NTM *)str->ntm);
 		}
-
 		bool detect_haarcascades(VideoCapture *vc);
+		IMAGE MatToImageArray(const Mat* frame);
 
 };

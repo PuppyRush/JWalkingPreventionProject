@@ -8,7 +8,8 @@
 #include "NetworkToRaspb.h"
 
 
-void *NetworkToRaspb::BeginForRaspb(Queue<EVENT_SIGNAL> *q){
+void *NetworkToRaspb::BeginForRaspb(){
+
 
 	int sockfd, numbytes;
 	struct hostent *he;
@@ -28,7 +29,7 @@ void *NetworkToRaspb::BeginForRaspb(Queue<EVENT_SIGNAL> *q){
 	bzero(&(their_addr.sin_zero), 8);     /* zero the rest of the struct */
 
 	if (connect(sockfd, (struct sockaddr *)&their_addr, sizeof(struct sockaddr)) == -1) {
-	    perror("fail connection");
+	    perror("fail connection to other raspb");
 	    //exit(1);
         }
 	else{
@@ -42,7 +43,7 @@ void *NetworkToRaspb::BeginForRaspb(Queue<EVENT_SIGNAL> *q){
 	while (1) {
 
 
-		char buf[sizeof(HEADER)]={0};
+		char buf[MAX_BUF]={0};
 
 		if ((numbytes=recv(sockfd, buf, sizeof(HEADER), 0)) == -1) {
 			perror("nothing recv.");
@@ -71,10 +72,10 @@ bool NetworkToRaspb::TranslateMsg(int sockfd, char* buf){
 
 			printf("recv REQ_FIRST_MESSAGE OF CLIENT.\n");
 
-			if(h.who == RASPB){
+			if(h.who != MONITOR){
 				msock.sockfd = sockfd;
 				msock.isConnected = true;
-				msock.who = RASPB;
+				msock.who = Network::getNumber();
 			}
 
 			else{
@@ -83,7 +84,7 @@ bool NetworkToRaspb::TranslateMsg(int sockfd, char* buf){
 
 			HEADER h_;
 			h_.msgIdx = SEND_FIRST_MESSAGE;
-			h_.who = RASPB;
+			h_.who = Network::getNumber();
 			h.body_str_size = sizeof(SEND_REQ_INFORMATION);
 			SEND_REQ_INFORMATION str;
 			str.hd = h_;
@@ -120,7 +121,7 @@ bool NetworkToRaspb::SendMessage(int sockfd, char* msg){
 	int send_size;
 	HEADER h;
 	h.msgIdx = SEND_CLIENT_MESSAGE;
-	h.who = RASPB;
+	h.who = Network::getNumber();
 
 	int strLen = strlen(msg);
 

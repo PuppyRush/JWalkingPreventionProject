@@ -1,22 +1,24 @@
 #include "client.h"
 
 
-void Client::BeginClient(){
+void* Client::BeginClient(){
+
 
 		pthread_t monitor_th, raspb_th;
 
-		NetworkToRaspb ntr;
-		NetworkToMonitor ntm;
+		NTR *ntr = new NTR();
+		NTM *ntm = new NTM();
 
-		THREAD_CLIENT_BEGIN_PARAMETER str1;
-		str1.context = &ntm;
+		THREAD_NETWORK_BEGIN_PARAMETER str1;
+		str1.context = ntm;
 
 
-		THREAD_CLIENT_BEGIN_PARAMETER str2;
-		str1.context = &ntr;
+		THREAD_NETWORK_BEGIN_PARAMETER str2;
+		str1.context = ntr;
 
 		pthread_create(&monitor_th, NULL, &NetworkToMonitor::getBeginForMonitor , &str1);
-		pthread_create(&raspb_th, NULL, &NetworkToRaspb::getBeginForRaspb , &str2);
+		//pthread_create(&raspb_th, NULL, &NetworkToRaspb::getBeginForRaspb , &str2);
 
+		return ntm;
 
 }

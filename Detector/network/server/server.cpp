@@ -1,8 +1,11 @@
 #include "../server/server.h"
 
 
-void *Server::BeginServer(Queue<EVENT_SIGNAL> *q)
+void *Server::BeginServer()
     {
+
+
+
    struct 	sockaddr_in 	my_addr;    			/*My address information 			   */
 	struct 	sockaddr_in 	their_addr; 			/*Connector's address information 	           */
 	int 			new_fd;  			/*The new file descriptor returned from accept	   */
@@ -83,14 +86,14 @@ bool Server::TranslateMsg(int sockfd, char* buf){
 
 	switch(h.msgIdx){
 
-		case SEND_FIRST_MESSAGE:{
+		case REQ_FIRST_MESSAGE_TO_RASPB:{
 
 			printf("recv SEND_FIRST_MESSAGE OF SERVER\n");
 
 			if(h.who == RASPB){
 				rsock.isConnected = true;
 				rsock.sockfd = sockfd;
-				rsock.who = RASPB;
+				rsock.who = myNumber;
 			}
 			else if(h.who == MONITOR){
 				msock.isConnected = true;
@@ -100,7 +103,7 @@ bool Server::TranslateMsg(int sockfd, char* buf){
 
 			break;
 		}
-		case SEND_CLIENT_MESSAGE:{
+		case SEND_MONITOR_MESSAGE:{
 
 			ON_MESSAGE str;
 
@@ -116,12 +119,12 @@ bool Server::TranslateMsg(int sockfd, char* buf){
 
 	return true;
 }
-
+/*
 bool Server::ReuqestWhoisyou(int sockfd){
 
 	SEND_REQ_INFORMATION str;
 	str.hd.msgIdx=REQ_FIRST_MESSAGE;
-	str.hd.who = RASPB;
+	str.hd.who = myNumber;
 	str.hd.body_str_size = 0;
 
 	if(send(sockfd , (char*)&str, sizeof(str), 0) >0){
@@ -132,14 +135,14 @@ bool Server::ReuqestWhoisyou(int sockfd){
 		return false;
 	usleep(10);
 
-}
-
+}*/
+/*
 bool Server::SendMessage(int sockfd, char* msg){
 
 		int send_size;
 		HEADER h;
 		h.msgIdx = SEND_CLIENT_MESSAGE;
-		h.who = RASPB;
+		h.who = myNumber;
 		h.body_str_size = sizeof(SEND_MESSAGE) - sizeof(HEADER);
 
 		int strLen = strlen(msg);
@@ -158,5 +161,5 @@ bool Server::SendMessage(int sockfd, char* msg){
 		else
 			return true;
 
-}
+}*/
 

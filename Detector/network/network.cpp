@@ -6,10 +6,24 @@
  *      Author: cmk
  */
 
-#include "../network/network.h"
+#include "network.h"
 
+pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-char* getIpAddress(){
+int Network::GetMyRaspNumber(){
+
+	pthread_mutex_lock(&mutex);
+
+	string ip(getIpAddress());
+	int idx = ip.find_last_of(".");
+	char num[1] = {0};
+	num[0]=ip[idx+1];
+	return atoi(num);
+
+	pthread_mutex_unlock(&mutex);
+}
+
+char* Network::getIpAddress(){
 
 	struct ifaddrs * ifAddrStruct=NULL;
 	struct ifaddrs * ifa=NULL;
@@ -42,3 +56,5 @@ char* getIpAddress(){
 	return addressBuffer;
 
 }
+
+

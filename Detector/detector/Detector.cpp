@@ -40,10 +40,11 @@ bool Detector::QueryPerformanceCounter(int64_t *performance_count)
     return true;
 }
 
-void *Detector::BeginDectect(Queue<EVENT_SIGNAL> *q, int frame_step)
+void *Detector::BeginDectect( int frame_step, NetworkToMonitor *ntm)
 {
+	this->ntm = ntm;
+
 	this->frame_step = frame_step;
-	eventQ = q;
 	VideoCapture *image = NULL;
 
 	if(isActivitedCam)
@@ -66,7 +67,6 @@ void *Detector::BeginDectect(Queue<EVENT_SIGNAL> *q, int frame_step)
 
 	destroyAllWindows();
 
-	return 0;
 }
 
 bool Detector::detect_haarcascades(VideoCapture *vc)
@@ -109,10 +109,11 @@ bool Detector::detect_haarcascades(VideoCapture *vc)
 		for(int i=0 ; i < 5 ; i++)
 			*vc >> frame;
 
-
 		// input image
 		*vc >> frame;
 		if(frame.empty()) break;
+
+		ntm->imageQ->enQueue( MatToImageArray(&frame) );
 
 		lane = dl.beginDetectLine(&frame);
 
@@ -154,3 +155,16 @@ bool Detector::detect_haarcascades(VideoCapture *vc)
 
 	return true;
 }
+
+
+IMAGE Detector::MatToImageArray(const Mat* frame){
+
+	IMAGE str;
+
+	Mat image(frame->rows, frame->cols, CV_8UC3);
+	char* data = (char*)image.data;
+
+	return str;
+
+}
+

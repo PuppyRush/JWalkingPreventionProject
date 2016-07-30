@@ -8,15 +8,16 @@
 #include "NetworkToMonitor.h"
 
 
-void *NetworkToMonitor::BeginForMonitor(Queue<EVENT_SIGNAL> *q){
+
+void *NetworkToMonitor::BeginForMonitor(){
+
 
 
 	int sockfd, numbytes;
 	struct hostent *he;
 	struct sockaddr_in their_addr; /* connector's address information */
 
-
-	he=gethostbyname("localhost");
+	he=gethostbyname("192.168.137.1");
 
 	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 	    perror("socket");
@@ -24,59 +25,38 @@ void *NetworkToMonitor::BeginForMonitor(Queue<EVENT_SIGNAL> *q){
 	}
 
 	their_addr.sin_family = AF_INET;      /* host byte order */
-	their_addr.sin_port = htons(MONITOR_PORT);    /* short, network byte order */
+	their_addr.sin_port = htons(9090);    /* short, network byte order */
 	their_addr.sin_addr = *((struct in_addr *)he->h_addr);
 	bzero(&(their_addr.sin_zero), 8);     /* zero the rest of the struct */
+	int err;
 
-	if (connect(sockfd, (struct sockaddr *)&their_addr, sizeof(struct sockaddr)) == -1) {
-	    perror("fail connection");
-	    //exit(1);
-        }
+	if( (err = connect( sockfd, (struct sockaddr*)&their_addr, sizeof( their_addr) )) == -1 )
+	{
+		printf( "\n모니터에 접속실패 %d",err);
+		exit( 1);
+	}
 	else{
 		SendMessage(sockfd, "Hi Server, I'm a RASPB.\n");
-		printf("succ_connection_of_raspb.\n");
+		printf("succ_connection_to_monitor.\n");
 	}
 
 
+	while(1){
+		char buf[MAX_BUF];
 
-
-	while (1) {
-
-
-
-	}
-
-/*
-
-	 int   sock;
-	   int   server_addr_size;
-
-	   struct sockaddr_in   server_addr;
-	   char buf[MAX_BUF]={0};
-	   char   buff_rcv[100];
-
-	   sprintf(buf,"asdsdasda");
-
-	   sock  = socket( PF_INET, SOCK_DGRAM, 0);
-
-	   if( -1 == sock)
-	   {
-	      printf( "socket 생성 실패n");
-	      exit( 1);
-	   }
-
-	   memset( &server_addr, 0, sizeof( server_addr));
-	   server_addr.sin_family     = AF_INET;
-	   server_addr.sin_port       = htons( MONITOR_PORT);
-	   server_addr.sin_addr.s_addr= inet_addr( "127.0.0.1");
-		while(true){
-			   sendto( sock, buf, strlen( buf )+1, 0,    // +1: NULL까지 포함해서 전송
-				    ( struct sockaddr*)&server_addr, sizeof( server_addr));
+		if ((numbytes=recv(sockfd, buf, sizeof(HEADER), 0)) == -1) {
+			perror("nothing recv.");
+			//exit(1);
+		}
+		else{
+			TranslateMsg(sockfd, buf);
 		}
 
-	   close( sock);*/
 
+		if(!imageQ->isEmpty())
+			SendImage(sockfd, imageQ->deQueue());
 
+	}
 
 }
 
@@ -87,16 +67,14 @@ bool NetworkToMonitor::TranslateMsg(int sockfd, char* buf){
 
 	switch(h.msgIdx){
 
-		case REQ_FIRST_MESSAGE:{
-
-
+/*		case SEND_FIRST_MESSAGE_TO_MONITOR:{
 
 			printf("recv REQ_FIRST_MESSAGE OF CLIENT.\n");
 
-			if(h.who == RASPB){
-				rsock.sockfd = sockfd;
-				rsock.isConnected = true;
-				rsock.who = RASPB;
+			if(h.who != MONITOR){
+				msock.sockfd = sockfd;
+				msock.isConnected = true;
+				msock.who = Network::getNumber();
 			}
 
 			else{
@@ -105,7 +83,7 @@ bool NetworkToMonitor::TranslateMsg(int sockfd, char* buf){
 
 			HEADER h_;
 			h_.msgIdx = SEND_FIRST_MESSAGE;
-			h_.who = RASPB;
+			h_.who = Network::getNumber();
 			h.body_str_size = sizeof(SEND_REQ_INFORMATION);
 			SEND_REQ_INFORMATION str;
 			str.hd = h_;
@@ -117,8 +95,8 @@ bool NetworkToMonitor::TranslateMsg(int sockfd, char* buf){
 				return false;
 
 			break;
-		}
-		case SEND_SERVER_MESSAGE:{
+		}*/
+		/*case SEND_SERVER_MESSAGE:{
 
 			ON_MESSAGE str;
 
@@ -128,10 +106,9 @@ bool NetworkToMonitor::TranslateMsg(int sockfd, char* buf){
 			printf("%s\n", msg);
 			break;
 		}
-
+*/
 
 	}
-
 
 	return true;
 }
@@ -139,19 +116,42 @@ bool NetworkToMonitor::TranslateMsg(int sockfd, char* buf){
 
 bool NetworkToMonitor::SendMessage(int sockfd, char* msg){
 
+//	int send_size;
+//	HEADER h;
+//	h.msgIdx = SEND_CLIENT_MESSAGE;
+//	h.who = Network::getNumber();
+//
+//	int strLen = strlen(msg);
+//
+//	SEND_MESSAGE str;
+//	memset(&str,0,sizeof(SEND_MESSAGE));
+//	memcpy(str.msg, msg, strLen );
+//	str.msgLen = strLen;
+//
+//	str.hd = h;
+//
+//	h.body_str_size = sizeof(str) - sizeof(HEADER);
+//
+//	if(send_size =send(sockfd, (char*)&str, sizeof(str), 0) <=0 ){
+//		perror("fail send message");
+//		return false;
+//	}
+//	else
+//		return true;
+
+
+}
+
+bool NTM::SendFirstMessage(int sockfd){
+
+	SEND_INFO_TO_MONITOR str;
+
 	int send_size;
 	HEADER h;
-	h.msgIdx = SEND_CLIENT_MESSAGE;
-	h.who = RASPB;
-
-	int strLen = strlen(msg);
-
-	SEND_MESSAGE str;
-	memset(&str,0,sizeof(SEND_MESSAGE));
-	memcpy(str.msg, msg, strLen );
-	str.msgLen = strLen;
-
-	str.hd = h;
+	h.msgIdx = SEND_FIRST_MESSAGE_TO_MONITOR;
+	h.who = myNumber;
+	h.body_str_size = sizeof(int);
+	str.raspbnum = myNumber;
 
 	h.body_str_size = sizeof(str) - sizeof(HEADER);
 
@@ -162,5 +162,18 @@ bool NetworkToMonitor::SendMessage(int sockfd, char* msg){
 	else
 		return true;
 
+}
 
+bool NetworkToMonitor::SendImage(int sockfd, IMAGE image){
+
+
+
+	return true;
+}
+
+bool NetworkToMonitor::SendEventSignal(int sockfd, EVENT_SIGNAL e){
+
+
+
+	return true;
 }

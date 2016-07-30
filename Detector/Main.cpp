@@ -79,32 +79,34 @@ int main(int argc, char** argv){
 		}
 	}
 
-/////모든 클래스에서 사용 할 EventQueue 생성(공유하게됨)
-	Queue<EVENT_SIGNAL> eventQ;
+
+	Network::SetMyNumber();
 
 /////클라이언트 접속하기
 
 	Client client;
-	client.BeginClient(&eventQ);
+	NetworkToMonitor *ntm = (NTM *)client.BeginClient();
 
 
 /////주변 라즈베리 탐색
 
-	pthread_t server_th, detctor_th;
-
+	pthread_t server_th, client_th, detctor_th;
 	Server server;
-	THREAD_SERVER_BEGIN_PARAMETER th_str;
+	THREAD_NETWORK_BEGIN_PARAMETER th_str;
 	th_str.context = (void *)&server;
-	th_str.q = &eventQ;
 
 	pthread_create(&server_th, NULL, &Server::getBeginServer , &th_str);
+
+
+
 
 ////////////
 
 	Detector dect;
 	THREAD_DETECTOR_BEGIN_PARAMETER th_str_detector;
 	th_str_detector.context = (void *)&dect;
-	th_str_detector.q = &eventQ;
+	th_str_detector.ntm = ntm;
+	th_str_detector.frame_step = frame_step;
 
 	pthread_create(&detctor_th, NULL, &Detector::getBeginDectect , &th_str_detector);
 

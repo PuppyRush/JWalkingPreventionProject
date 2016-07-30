@@ -43,17 +43,19 @@ class Server{
 	private:
 		Queue<EVENT_SIGNAL> *eventQ;
 		SocketInfo rsock, msock;
+		 int myNumber;
 
 	public:
 
 		Server(){
 			eventQ = NULL;
+
 		}
 
-		void *BeginServer(Queue<EVENT_SIGNAL> *q);
+		void *BeginServer();
 		static void* getBeginServer(void* th){
-			THREAD_SERVER_BEGIN_PARAMETER *str = (THREAD_SERVER_BEGIN_PARAMETER *)th;
-			return ( (Server *)str->context)->BeginServer(str->q);
+			THREAD_NETWORK_BEGIN_PARAMETER *str = (THREAD_NETWORK_BEGIN_PARAMETER *)th;
+			return ( (Server *)str->context)->BeginServer();
 		}
 
 		void *Receive(int sockfd);

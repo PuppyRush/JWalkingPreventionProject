@@ -19,14 +19,16 @@ class NetworkToRaspb {
 
 	public:
 
-		void *BeginForRaspb(Queue<EVENT_SIGNAL> *q);
+		void *BeginForRaspb();
 		static void* getBeginForRaspb(void* th){
-			THREAD_CLIENT_BEGIN_PARAMETER *str = (THREAD_CLIENT_BEGIN_PARAMETER *)th;
-			return ( (NetworkToRaspb *)str->context)->BeginForRaspb( str->q );
+			THREAD_NETWORK_BEGIN_PARAMETER *str = (THREAD_NETWORK_BEGIN_PARAMETER *)th;
+			return ( (NetworkToRaspb *)str->context)->BeginForRaspb( );
 		}
 		bool TranslateMsg(int sockfd, char* buf);
 		bool SendMessage(int sockfd, char* msg);
 
 };
+
+typedef NetworkToRaspb NTR;
 
 #endif /* DETECTOR_NETWORK_CLIENT_NETWORKTORASPB_H_ */

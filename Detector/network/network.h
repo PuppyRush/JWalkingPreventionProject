@@ -29,43 +29,84 @@
 #define MYPORT 9191
 #define BACKLOG 10     	/* how many pending connections queue will hold */
 
+
+
+
 ///////////////////MSG INDEX
+
+enum RASPB_MSG{
+
+	SEND_FIRST_MESSAGE_TO_MONITOR=500,
+	SEND_IMAGE,
+	SEND_SIGNAL,
+	SEND_MESSAGE_TO_MONITOR
+
+};
+
+enum MONITOR_MSG{
+
+	REQ_FIRST_MESSAGE_TO_RASPB=100,
+	SEND_MONITOR_MESSAGE,
+	SEND_EVENT_SIGNAL,
+
+};
+
+/*
 enum SERVER_MSG{
 
-	REQ_FIRST_MESSAGE=100,
-	SEND_SERVER_MESSAGE
-
-};
 
 
-enum CLINET_MSG{
 
-	SEND_FIRST_MESSAGE=100,
+};*/
+
+
+/*enum CLINET_MSG{
+
+	SEND_FIRST_MESSAGE_TO_=100,
 	SEND_CLIENT_MESSAGE
 
-};
+};*/
 
 
 /////////////////MACHINE INFO
 
 
-#define RASPB	1
-#define MONITOR	2
+#define RASPB			1
+#define MONITOR		2
 
+/////////////////EVENT KIND
+
+#define OCCUR_JWALKER	1
 
  struct SocketInfo{
 
 	int sockfd;
 	int who;
 	bool isConnected;
+
 };
 
- struct THREAD_CLIENT_BEGIN_PARAMETER{
+ struct THREAD_NETWORK_BEGIN_PARAMETER{
 
  	void* context;
- 	Queue<EVENT_SIGNAL> *q;
 
  };
+
+
+struct EVENT_SIGNAL{
+
+ 	int signal;
+ 	int road_num;
+
+ };
+
+
+struct IMAGE{
+
+ 	char image[1024];
+
+ };
+
 
 
 //////////////////////MSG HEADER
@@ -78,35 +119,73 @@ struct HEADER{
 
 };
 
-///////////////////FOR SENDED STRUCT
+///////////////////FOR BE SENDED STRUCT
 
 struct SEND_REQ_INFORMATION{
 	HEADER hd;
 };
 
+struct SEND_INFO_TO_MONITOR{
+	HEADER hd;
+	int raspbnum;
+};
+
  struct SEND_MESSAGE{
  	HEADER hd;
+ 	int from;
+ 	int to;
  	int msgLen;
  	char msg[MSG_LEN];
  };
 
 struct SEND_JWALKING_EVENT_SIGNAL{
 	 HEADER hd;
+	 int from;
+	 int to;
 	 EVENT_SIGNAL event;
-
  };
- ////////////////////FOR RECEIVED STRUCT
+
+struct SEND_JWALKING_IMAGE{
+	 HEADER hd;
+	 IMAGE event;
+ };
+ ////////////////////FOR BE RECEIVED STRUCT
 
  struct ON_MESSAGE{
-
+	int from;
+	int to;
  	int msgLen;
  	char msg[MSG_LEN];
 
  };
 
+ struct ON_JWALKING_EVENT_SIGNAL{
+ 	 int from;
+ 	 int to;
+ 	 EVENT_SIGNAL event;
+  };
+
+ static volatile int myNumber = 4;
+
+ class Network{
 
 
- char * getIpAddress();
+ 	 private:
+
+	 	static int GetMyRaspNumber();
+	 	static char* getIpAddress();
+
+ 	 public:
+
+	 	static void SetMyNumber(){
+	 		myNumber = GetMyRaspNumber();
+	 	}
+
+	 	 static int getNumber(){
+	 		 return myNumber;
+	 	 }
+
+ };
 
 
 #endif /* DETECTOR_NETWORK_H_ */

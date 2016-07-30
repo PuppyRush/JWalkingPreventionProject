@@ -17,8 +17,8 @@
 class Client {
 
 	public:
-		void BeginClient();
-
+		void* BeginClient();
+		 int myNumber;
 
 };
 
