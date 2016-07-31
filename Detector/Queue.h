@@ -8,17 +8,20 @@
 #ifndef DETECTOR_QUEUE_H_
 #define DETECTOR_QUEUE_H_
 
+#include <pthread.h>
 #include <iostream>
-using namespace std;
 
+using namespace std;
 
 #define MAX_SIZE 100
 
-using namespace std;
+
+
 
 template< class T > class Queue
 {
     public:
+			pthread_mutex_t mutex;
         Queue();//default constructor
         ~Queue()//destructor
           {delete [] values;}
@@ -39,7 +42,8 @@ template< class T > Queue<T>::Queue():
     size(MAX_SIZE),//ctor
     values(new T[MAX_SIZE]),
     front(0),
-    back(0)
+    back(0),
+    mutex(mutex = PTHREAD_MUTEX_INITIALIZER)
       { /*empty*/  }
 
 template< class T > bool Queue<T>::isFull()
@@ -52,6 +56,7 @@ template< class T > bool Queue<T>::isFull()
 
 template< class T > bool Queue<T>::enQueue(T x)
 {
+	pthread_mutex_lock(&mutex);
     bool b = 0;
    if(!Queue<T>::isFull())
    {
@@ -59,6 +64,7 @@ template< class T > bool Queue<T>::enQueue(T x)
        back = (back + 1) % size;
        b = 1;
    }
+   pthread_mutex_unlock(&mutex);
   return b;
 }
 
@@ -72,6 +78,7 @@ template< class T > bool Queue<T>::isEmpty()
 
 template< class T > T Queue<T>::deQueue()
 {
+	pthread_mutex_lock(&mutex);
 	T val;
 
 	if(!Queue<T>::isEmpty()){
@@ -80,6 +87,8 @@ template< class T > T Queue<T>::deQueue()
 	}
 	else
 		cerr << "Queue is Empty : ";
+
+	 pthread_mutex_unlock(&mutex);
 
 	return val;
 }

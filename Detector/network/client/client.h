@@ -8,7 +8,6 @@
 #ifndef DETECTOR_NETWORK_CLIENT_CLIENT_H_
 #define DETECTOR_NETWORK_CLIENT_CLIENT_H_
 
-#include "NetworkToRaspb.h"
 #include "NetworkToMonitor.h"
 
 
@@ -17,7 +16,7 @@
 class Client {
 
 	public:
-		void* BeginClient();
+		void* BeginClient(NTM* );
 		 int myNumber;
 
 };

@@ -113,7 +113,7 @@ bool Detector::detect_haarcascades(VideoCapture *vc)
 		*vc >> frame;
 		if(frame.empty()) break;
 
-		ntm->imageQ->enQueue( MatToImageArray(&frame) );
+		ntm->SendImage( MatToImageArray(&frame) );
 
 		lane = dl.beginDetectLine(&frame);
 
@@ -159,12 +159,16 @@ bool Detector::detect_haarcascades(VideoCapture *vc)
 
 IMAGE Detector::MatToImageArray(const Mat* frame){
 
-	IMAGE str;
+	IMAGE img;
+	Mat dst;
+	cv::resize(*frame,dst, Size(320,240), 0,0,CV_INTER_NN);
+	int totalSize = dst.total() * dst.elemSize();
 
-	Mat image(frame->rows, frame->cols, CV_8UC3);
-	char* data = (char*)image.data;
+	img.imageArraySize = totalSize;
 
-	return str;
+	memcpy(img.image, dst.data, totalSize);
+
+	return img;
 
 }
 

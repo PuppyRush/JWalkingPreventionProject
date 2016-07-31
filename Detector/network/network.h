@@ -25,7 +25,8 @@
 #define MAX_BUF 	1024
 #define MSG_LEN	128
 #define RASPB_PORT	9191
-#define MONITOR_PORT 9090 /* the port client will be connecting to */
+#define MONITOR_PORT 9090
+#define MONITOR_UDP_PORT 9091
 #define MYPORT 9191
 #define BACKLOG 10     	/* how many pending connections queue will hold */
 
@@ -103,7 +104,8 @@ struct EVENT_SIGNAL{
 
 struct IMAGE{
 
- 	char image[1024];
+	int imageArraySize;
+ 	unsigned char image[333000];
 
  };
 
@@ -147,6 +149,7 @@ struct SEND_JWALKING_EVENT_SIGNAL{
 
 struct SEND_JWALKING_IMAGE{
 	 HEADER hd;
+
 	 IMAGE event;
  };
  ////////////////////FOR BE RECEIVED STRUCT

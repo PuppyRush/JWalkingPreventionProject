@@ -13,13 +13,13 @@ void *NetworkToMonitor::BeginForMonitor(){
 
 
 
-	int sockfd, numbytes;
+	int monitor_sock, numbytes;
 	struct hostent *he;
 	struct sockaddr_in their_addr; /* connector's address information */
 
 	he=gethostbyname("192.168.137.1");
 
-	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
+	if ((monitorSock = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
 	    perror("socket");
 	    exit(1);
 	}
@@ -30,13 +30,13 @@ void *NetworkToMonitor::BeginForMonitor(){
 	bzero(&(their_addr.sin_zero), 8);     /* zero the rest of the struct */
 	int err;
 
-	if( (err = connect( sockfd, (struct sockaddr*)&their_addr, sizeof( their_addr) )) == -1 )
+	if( (err = connect( monitorSock, (struct sockaddr*)&their_addr, sizeof( their_addr) )) == -1 )
 	{
 		printf( "\n모니터에 접속실패 %d",err);
 		exit( 1);
 	}
 	else{
-		SendMessage(sockfd, "Hi Server, I'm a RASPB.\n");
+		SendFirstMessage(monitorSock);
 		printf("succ_connection_to_monitor.\n");
 	}
 
@@ -44,19 +44,30 @@ void *NetworkToMonitor::BeginForMonitor(){
 	while(1){
 		char buf[MAX_BUF];
 
-		if ((numbytes=recv(sockfd, buf, sizeof(HEADER), 0)) == -1) {
+		if ((numbytes=recv(monitorSock, buf, sizeof(HEADER), 0)) == -1) {
 			perror("nothing recv.");
 			//exit(1);
 		}
 		else{
-			TranslateMsg(sockfd, buf);
+			TranslateMsg(monitorSock, buf);
 		}
 
 
-		if(!imageQ->isEmpty())
-			SendImage(sockfd, imageQ->deQueue());
+
 
 	}
+
+}
+
+void NTM::BeginSendImage(){
+
+
+	 udpSock=socket(AF_INET, SOCK_DGRAM, 0);
+
+	 bzero(&udpaddr, sizeof(udpaddr));
+	 udpaddr.sin_family=AF_INET;
+	 udpaddr.sin_port=htons(MONITOR_UDP_PORT);
+	 udpaddr.sin_addr.s_addr=inet_addr("192.168.137.1");
 
 }
 
@@ -144,18 +155,18 @@ bool NetworkToMonitor::SendMessage(int sockfd, char* msg){
 
 bool NTM::SendFirstMessage(int sockfd){
 
-	SEND_INFO_TO_MONITOR str;
+	char buf[1024];
 
-	int send_size;
+	SEND_INFO_TO_MONITOR str;
 	HEADER h;
 	h.msgIdx = SEND_FIRST_MESSAGE_TO_MONITOR;
-	h.who = myNumber;
-	h.body_str_size = sizeof(int);
-	str.raspbnum = myNumber;
-
+	h.who = RASPB;
 	h.body_str_size = sizeof(str) - sizeof(HEADER);
+	str.raspbnum = myNumber;
+	str.hd = h;
+	memcpy(buf, &str, sizeof(str));
 
-	if(send_size =send(sockfd, (char*)&str, sizeof(str), 0) <=0 ){
+	if(send(sockfd, (void *)&str, sizeof(str), 0) <=0 ){
 		perror("fail send message");
 		return false;
 	}
@@ -164,10 +175,29 @@ bool NTM::SendFirstMessage(int sockfd){
 
 }
 
-bool NetworkToMonitor::SendImage(int sockfd, IMAGE image){
+bool NTM::SendImage( IMAGE image){
+
+	HEADER hd;
+	hd.who = RASPB;
+	hd.msgIdx =SEND_IMAGE;
+
+	SEND_JWALKING_IMAGE str;
+	str.event = image;
+	str.hd = hd;
+
+	hd.body_str_size = sizeof(str) - sizeof(hd);
 
 
 
+	if(send(monitorSock, (void *)&str, sizeof(str), 0) <=0 ){
+			perror("fail send message");
+			return false;
+		}
+		else
+			return true;
+
+	/*int sendlen = sendto(udpSock,(char *)&image,sizeof(image),0, (struct sockaddr*)&udpaddr,sizeof(udpaddr));
+	printf("%d", sendlen);*/
 	return true;
 }
 

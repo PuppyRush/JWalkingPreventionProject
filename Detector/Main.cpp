@@ -11,6 +11,8 @@
 
 int main(int argc, char** argv){
 
+	cout << CV_VERSION << std::endl;
+
 	if(argc < 3 || argc > 5){
 		fprintf(stderr, "\n매개변수를 확인하세요\n1.$(모니터 IP)  2.($상대 라즈베리IP) \n"
 		"3.($파일을 읽어서 영상처리 테스트할경우 파일 전체경로. default=CAM )  4.($건너띌 프레임 수(default=2))\n");
@@ -27,7 +29,7 @@ int main(int argc, char** argv){
 
 ///////주변장치 연결확인
 
-	printf("\n주변장치와 연결여부를 확인합니다...\m");
+	printf("\n주변장치와 연결여부를 확인합니다...\n");
 
 	while(0){
 
@@ -85,23 +87,26 @@ int main(int argc, char** argv){
 /////클라이언트 접속하기
 
 	Client client;
-	NetworkToMonitor *ntm = (NTM *)client.BeginClient();
+	NetworkToMonitor *ntm = new NTM();
 
+	client.BeginClient(ntm);
 
 /////주변 라즈베리 탐색
+/*
 
-	pthread_t server_th, client_th, detctor_th;
+	pthread_t server_th, client_th;
 	Server server;
 	THREAD_NETWORK_BEGIN_PARAMETER th_str;
 	th_str.context = (void *)&server;
 
 	pthread_create(&server_th, NULL, &Server::getBeginServer , &th_str);
 
+*/
 
 
 
 ////////////
-
+	pthread_t detctor_th;
 	Detector dect;
 	THREAD_DETECTOR_BEGIN_PARAMETER th_str_detector;
 	th_str_detector.context = (void *)&dect;
@@ -110,7 +115,7 @@ int main(int argc, char** argv){
 
 	pthread_create(&detctor_th, NULL, &Detector::getBeginDectect , &th_str_detector);
 
-	pthread_join(server_th, NULL);
+	//pthread_join(server_th, NULL);
 	pthread_join(detctor_th, NULL);
 
 //////////

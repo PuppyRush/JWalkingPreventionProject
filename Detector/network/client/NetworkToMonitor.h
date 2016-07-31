@@ -20,6 +20,8 @@ class NetworkToMonitor {
 		Queue<IMAGE> *imageQ;
 		SocketInfo rsock;
 		SocketInfo msock;
+		int udpSock, monitorSock;
+		sockaddr_in udpaddr;
 		bool isLockImageSend;
 
 	public:
@@ -47,10 +49,12 @@ class NetworkToMonitor {
 			THREAD_NETWORK_BEGIN_PARAMETER *str = (THREAD_NETWORK_BEGIN_PARAMETER *)th;
 			return ( (NetworkToMonitor *)str->context)->BeginForMonitor();
 		}
+		void BeginSendImage();
+
 
 		bool TranslateMsg(int sockfd, char* buf);
 		bool SendMessage(int sockfd, char* msg);
-		bool SendImage(int sockfd, IMAGE);
+		bool SendImage(IMAGE image);
 		bool SendEventSignal(int sockfd, EVENT_SIGNAL);
 		bool SendFirstMessage(int sockfd);
 
