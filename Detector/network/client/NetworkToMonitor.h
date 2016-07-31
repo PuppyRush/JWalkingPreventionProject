@@ -16,8 +16,7 @@
 class NetworkToMonitor {
 
 	public:
-		Queue<EVENT_SIGNAL> *eventQ;
-		Queue<IMAGE> *imageQ;
+
 		SocketInfo rsock;
 		SocketInfo msock;
 		int udpSock, monitorSock;
@@ -28,8 +27,7 @@ class NetworkToMonitor {
 
 		NetworkToMonitor(const NetworkToMonitor &T){
 
-			eventQ = T.eventQ;
-			imageQ = T.imageQ;
+
 			rsock = T.rsock;
 			msock = T.msock;
 
@@ -39,8 +37,7 @@ class NetworkToMonitor {
 
 		NetworkToMonitor(){
 
-			eventQ = new Queue<EVENT_SIGNAL>();
-			imageQ = new Queue<IMAGE>();
+
 
 		}
 

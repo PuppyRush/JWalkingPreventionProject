@@ -30,7 +30,7 @@
 #include <assert.h>
 
 #include "DetectLine.h"
-#include "../Queue.h"
+//#include "../Queue.h"
 #include "../network/client/NetworkToMonitor.h"
 
 struct THREAD_DETECTOR_BEGIN_PARAMETER{

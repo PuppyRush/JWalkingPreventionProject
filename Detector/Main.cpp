@@ -29,6 +29,7 @@ int main(int argc, char** argv){
 
 ///////주변장치 연결확인
 
+	/*
 	printf("\n주변장치와 연결여부를 확인합니다...\n");
 
 	while(0){
@@ -81,7 +82,7 @@ int main(int argc, char** argv){
 		}
 	}
 
-
+*/
 	Network::SetMyNumber();
 
 /////클라이언트 접속하기

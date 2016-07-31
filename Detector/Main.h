@@ -10,8 +10,8 @@
 
 #include <iostream>
 #include <pthread.h>
-#include "device/ConfirmDevice.h"
-#include "device/ConnectDevice.h"
+//#include "device/ConfirmDevice.h"
+//#include "device/ConnectDevice.h"
 #include "detector/Detector.h"
 #include "network/client/client.h"
 #include "network/server/server.h"
