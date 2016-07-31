@@ -83,7 +83,6 @@ int main(int argc, char** argv){
 	}
 
 */
-	Network::SetMyNumber();
 
 /////클라이언트 접속하기
 

@@ -9,7 +9,7 @@
 #define DETECTOR_NETWORK_CLIENT_CLIENT_H_
 
 #include "NetworkToMonitor.h"
-
+#include <pthread.h>
 
 
 

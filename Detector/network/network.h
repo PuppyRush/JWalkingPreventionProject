@@ -20,6 +20,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <pthread.h>
 //#include "../Queue.h"
 
 #define MAX_BUF 	1024
@@ -170,8 +171,7 @@ struct SEND_JWALKING_IMAGE{
 
  static volatile int myNumber = 4;
 
- class Network{
-
+/* class Network{
 
  	 private:
 
@@ -188,7 +188,7 @@ struct SEND_JWALKING_IMAGE{
 	 		 return myNumber;
 	 	 }
 
- };
+ };*/
 
 
 #endif /* DETECTOR_NETWORK_H_ */

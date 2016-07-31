@@ -32,7 +32,6 @@ struct THREAD_SERVER_PARAMETER{
 struct THREAD_SERVER_BEGIN_PARAMETER{
 
 	void* context;
-	Queue<EVENT_SIGNAL> *q;
 
 };
 
@@ -41,14 +40,13 @@ class Server{
 
 
 	private:
-		Queue<EVENT_SIGNAL> *eventQ;
+
 		SocketInfo rsock, msock;
 		 int myNumber;
 
 	public:
 
 		Server(){
-			eventQ = NULL;
 
 		}
 
