@@ -5,57 +5,65 @@ void *Server::BeginServer()
     {
 
 
+	  char buffer[MAX_BUF];
+	    struct sockaddr_in server_addr, client_addr;
+	    char temp[20];
+	    int server_fd, client_fd;
+	    //server_fd, client_fd : 각 소켓 번호
+	    int  msg_size;
+	    socklen_t len;
 
-   struct 	sockaddr_in 	my_addr;    			/*My address information 			   */
-	struct 	sockaddr_in 	their_addr; 			/*Connector's address information 	           */
-	int 			new_fd;  			/*The new file descriptor returned from accept	   */
-	int 			sockfd;  			/*The first file descriptor given for communication*/
-	socklen_t 			sin_size;			/*Size of struct internet input address		   */
-	char        *buf;       	/*The string to be passed 			   */
 
-	buf = new char[1024];
 
-	if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1) {
-	    perror("socket");
-	    exit(1);
-        }
+	    if((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+	    {// 소켓 생성
+	        printf("Server : Can't open stream socket\n");
+	        exit(0);
+	    }
+	    memset(&server_addr, 0x00, sizeof(server_addr));
+	    //server_Addr 을 NULL로 초기화
 
-	my_addr.sin_family = AF_INET;         /* host byte order */
-	my_addr.sin_port = htons(MYPORT);     /* short, network byte order */
-	my_addr.sin_addr.s_addr = INADDR_ANY; /* auto-fill with my IP */
-	bzero(&(my_addr.sin_zero), 8);        /* zero the rest of the struct */
+	    server_addr.sin_family = AF_INET;
+	    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+	    server_addr.sin_port = htons(MYPORT);
+	    //server_addr 셋팅
 
-	if (bind(sockfd, (struct sockaddr *)&my_addr, sizeof(struct sockaddr)) == -1) {
-	    perror("bind");
-	    exit(1);
-        }
-	else
-		printf("succ_bind\n");
+	    if(bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) <0)
+	    {//bind() 호출
+	        printf("Server : Can't bind local address.\n");
+	        exit(0);
+	    }
 
-	if (listen(sockfd, BACKLOG) == -1) {
-	    perror("listen");
-	    exit(1);
-        }
-	else
-		printf("succ_listen\n");
+	    if(listen(server_fd, 5) < 0)
+	    {//소켓을 수동 대기모드로 설정
+	        printf("Server : Can't listening connect.\n");
+	        exit(0);
+	    }
 
-	while(1){
-		if ((new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size)) >0){
-			printf("succ new accept\n");
+	    memset(buffer, 0x00, sizeof(buffer));
+	    printf("Server : wating connection request.\n");
+	    len = sizeof(client_addr);
+	    while(1)
+		{
+			client_fd = accept(server_fd, (struct sockaddr *)&client_addr, &len);
+			if(client_fd < 0)
+			{
+			    printf("Server: accept failed.\n");
+			    exit(0);
+			}
+
 			pthread_t sock_th;
 			THREAD_SERVER_PARAMETER *par = (THREAD_SERVER_PARAMETER *) malloc(sizeof(THREAD_SERVER_PARAMETER));
-			par->context = new Server;
-			par->sockfd = new_fd;
+			par->context = this;
+			par->sockfd = client_fd;
 			pthread_create(&sock_th, NULL, &Server::getReceive , (void *)par);
-			usleep(100);
-		}
-		else{
+			pthread_join(sock_th, NULL);
 
 
 		}
 
-		usleep(100);
-	}
+
+
 
 }
 
@@ -68,7 +76,7 @@ void *Server::Receive(int sockfd){
 		char *buf = new char[MAX_BUF];
 
 		if ((recv_bytes = recv(sockfd, buf, MAX_BUF, 0)) >0){
-			printf("suc");
+			printf("succ");
 			TranslateMsg(sockfd, buf);
 			usleep(50);
 		}
@@ -84,38 +92,51 @@ bool Server::TranslateMsg(int sockfd, char* buf){
 	HEADER h;
 	memcpy(&h, buf, sizeof(HEADER));
 
-	switch(h.msgIdx){
+	if(h.who == RASPB)
+		switch(h.msgIdx){
 
-		case REQ_FIRST_MESSAGE_TO_RASPB:{
+		/*	case REQ_FIRST_MESSAGE_TO_RASPB:{
 
-			printf("recv SEND_FIRST_MESSAGE OF SERVER\n");
+				printf("recv SEND_FIRST_MESSAGE OF SERVER\n");
 
-			if(h.who == RASPB){
-				rsock.isConnected = true;
-				rsock.sockfd = sockfd;
-				rsock.who = myNumber;
+				if(h.who == RASPB){
+					rsock.isConnected = true;
+					rsock.sockfd = sockfd;
+					rsock.who = myNumber;
+				}
+				else if(h.who == MONITOR){
+					msock.isConnected = true;
+					msock.sockfd = sockfd;
+					msock.who = MONITOR;
+				}
+
+				break;
 			}
-			else if(h.who == MONITOR){
-				msock.isConnected = true;
-				msock.sockfd = sockfd;
-				msock.who = MONITOR;
+			case SEND_MONITOR_MESSAGE:{
+
+				ON_MESSAGE str;
+
+				memcpy(&str, &buf[sizeof(HEADER)] , h.body_str_size);
+				char *msg = new char[str.msgLen+1];
+				memcpy(msg, &str.msg, str.msgLen);
+				printf("%s\n", msg);
+				break;
+			}*/
+
+		}
+	else if(h.who == MONITOR){
+		switch(h.msgIdx){
+			case SEND_SIGNAL_MONITOR:{
+
+				EVENT_SIGNAL event;
+				int others[2];
+				memcpy(&event, &buf[sizeof(HEADER)] , sizeof(event));
+				memcpy(others, &buf[sizeof(HEADER) + sizeof(event)] , sizeof(int)*2);
+				DeviceController::DoDevice();
 			}
-
-			break;
 		}
-		case SEND_MONITOR_MESSAGE:{
 
-			ON_MESSAGE str;
-
-			memcpy(&str, &buf[sizeof(HEADER)] , h.body_str_size);
-			char *msg = new char[str.msgLen+1];
-			memcpy(msg, &str.msg, str.msgLen);
-			printf("%s\n", msg);
-			break;
-		}
 	}
-
-	usleep(10);
 
 	return true;
 }

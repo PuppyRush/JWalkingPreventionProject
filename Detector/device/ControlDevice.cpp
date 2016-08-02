@@ -5,11 +5,5 @@
  *      Author: cmk
  */
 
-#ifndef DETECTOR_DEVICE_CONTROLDEVICE_CPP_
-#define DETECTOR_DEVICE_CONTROLDEVICE_CPP_
+#include "ControlDevice.h"
 
-
-
-
-
-#endif /* DETECTOR_DEVICE_CONTROLDEVICE_CPP_ */

@@ -45,30 +45,11 @@ enum RASPB_MSG{
 
 };
 
-enum MONITOR_MSG{
 
-	REQ_FIRST_MESSAGE_TO_RASPB=100,
-	SEND_MONITOR_MESSAGE,
-	SEND_EVENT_SIGNAL,
-
+enum MONITOR_MSG
+{
+	SEND_SIGNAL_MONITOR = 500
 };
-
-/*
-enum SERVER_MSG{
-
-
-
-
-};*/
-
-
-/*enum CLINET_MSG{
-
-	SEND_FIRST_MESSAGE_TO_=100,
-	SEND_CLIENT_MESSAGE
-
-};*/
-
 
 /////////////////MACHINE INFO
 
@@ -77,8 +58,11 @@ enum SERVER_MSG{
 #define MONITOR		2
 
 /////////////////EVENT KIND
+enum EVENT_KIND{
 
-#define OCCUR_JWALKER	1
+	OCCUR_JWALKER	= 100
+
+};
 
  struct SocketInfo{
 
@@ -143,9 +127,10 @@ struct SEND_INFO_TO_MONITOR{
 
 struct SEND_JWALKING_EVENT_SIGNAL{
 	 HEADER hd;
+	 EVENT_SIGNAL event;
 	 int from;
 	 int to;
-	 EVENT_SIGNAL event;
+
  };
 
 struct SEND_JWALKING_IMAGE{
@@ -164,9 +149,10 @@ struct SEND_JWALKING_IMAGE{
  };
 
  struct ON_JWALKING_EVENT_SIGNAL{
+	 EVENT_SIGNAL event;
  	 int from;
  	 int to;
- 	 EVENT_SIGNAL event;
+
   };
 
  static volatile int myNumber = 4;

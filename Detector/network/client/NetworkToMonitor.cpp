@@ -12,8 +12,14 @@
 void *NetworkToMonitor::BeginForMonitor(){
 
 
+	 udpSock=socket(AF_INET, SOCK_DGRAM, 0);
 
-	int monitor_sock, numbytes;
+	 bzero(&udpaddr, sizeof(udpaddr));
+	 udpaddr.sin_family=AF_INET;
+	 udpaddr.sin_port=htons(MONITOR_UDP_PORT);
+	 udpaddr.sin_addr.s_addr=inet_addr("192.168.137.1");
+
+	int numbytes;
 	struct hostent *he;
 	struct sockaddr_in their_addr; /* connector's address information */
 
@@ -59,17 +65,6 @@ void *NetworkToMonitor::BeginForMonitor(){
 
 }
 
-void NTM::BeginSendImage(){
-
-
-	 udpSock=socket(AF_INET, SOCK_DGRAM, 0);
-
-	 bzero(&udpaddr, sizeof(udpaddr));
-	 udpaddr.sin_family=AF_INET;
-	 udpaddr.sin_port=htons(MONITOR_UDP_PORT);
-	 udpaddr.sin_addr.s_addr=inet_addr("192.168.137.1");
-
-}
 
 bool NetworkToMonitor::TranslateMsg(int sockfd, char* buf){
 
@@ -175,7 +170,7 @@ bool NTM::SendFirstMessage(int sockfd){
 
 }
 
-bool NTM::SendImage( IMAGE image){
+bool NTM::SendImage(IMAGE image){
 
 	HEADER hd;
 	hd.who = RASPB;
@@ -189,20 +184,42 @@ bool NTM::SendImage( IMAGE image){
 
 
 
-	if(send(monitorSock, (void *)&str, sizeof(str), 0) <=0 ){
-			perror("fail send message");
-			return false;
-		}
-		else
-			return true;
+	if(sendto(udpSock, (void *)&str, sizeof(str)/100, 0, (struct sockaddr *)&udpaddr, sizeof(udpaddr)) <=0 ){
+		perror("fail send message");
+		return false;
+	}
+	else
+		return true;
 
 	/*int sendlen = sendto(udpSock,(char *)&image,sizeof(image),0, (struct sockaddr*)&udpaddr,sizeof(udpaddr));
 	printf("%d", sendlen);*/
 	return true;
 }
 
-bool NetworkToMonitor::SendEventSignal(int sockfd, EVENT_SIGNAL e){
+bool NetworkToMonitor::SendEventSignal(){
 
+	SEND_JWALKING_EVENT_SIGNAL str;
+	str.to = 1;
+	str.from = 4;
+
+	EVENT_SIGNAL event;
+	event.road_num = 1;
+	event.signal = OCCUR_JWALKER;
+
+	HEADER hd;
+	hd.who = RASPB;
+	hd.msgIdx = SEND_SIGNAL;
+
+	str.hd = hd;
+	str.event = event;
+	str.hd.body_str_size = sizeof(str)-sizeof(hd)-sizeof(event);
+
+	if(send(monitorSock, (void *)&str, sizeof(str), 0) <=0 ){
+		perror("fail send message");
+		return false;
+	}
+	else
+		return true;
 
 
 	return true;

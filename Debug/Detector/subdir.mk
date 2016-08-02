@@ -4,14 +4,17 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../Detector/CTimer.cpp \
 ../Detector/Main.cpp \
 ../Detector/Queue.cpp 
 
 OBJS += \
+./Detector/CTimer.o \
 ./Detector/Main.o \
 ./Detector/Queue.o 
 
 CPP_DEPS += \
+./Detector/CTimer.d \
 ./Detector/Main.d \
 ./Detector/Queue.d 
 

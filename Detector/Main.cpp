@@ -90,9 +90,11 @@ int main(int argc, char** argv){
 	NetworkToMonitor *ntm = new NTM();
 
 	client.BeginClient(ntm);
+	usleep(3000);
+	int udpSock = ntm->udpSock;
 
 /////주변 라즈베리 탐색
-/*
+
 
 	pthread_t server_th, client_th;
 	Server server;
@@ -101,20 +103,21 @@ int main(int argc, char** argv){
 
 	pthread_create(&server_th, NULL, &Server::getBeginServer , &th_str);
 
-*/
+
 
 
 
 ////////////
-	pthread_t detctor_th;
+	pthread_t detctor_th, timer_th;
 	Detector dect;
 	THREAD_DETECTOR_BEGIN_PARAMETER th_str_detector;
 	th_str_detector.context = (void *)&dect;
 	th_str_detector.ntm = ntm;
+	th_str_detector.udpSock = udpSock;
 	th_str_detector.frame_step = frame_step;
 
 	pthread_create(&detctor_th, NULL, &Detector::getBeginDectect , &th_str_detector);
-
+	pthread_create(&timer_th, NULL, &Detector::getBeginForTimer ,  &dect);
 	//pthread_join(server_th, NULL);
 	pthread_join(detctor_th, NULL);
 

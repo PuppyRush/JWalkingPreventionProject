@@ -43,16 +43,16 @@ class NetworkToMonitor {
 
 		void *BeginForMonitor();
 		static void* getBeginForMonitor(void* th){
-			THREAD_NETWORK_BEGIN_PARAMETER *str = (THREAD_NETWORK_BEGIN_PARAMETER *)th;
-			return ( (NetworkToMonitor *)str->context)->BeginForMonitor();
+
+			return ( (NetworkToMonitor *)th)->BeginForMonitor();
 		}
 		void BeginSendImage();
 
 
 		bool TranslateMsg(int sockfd, char* buf);
 		bool SendMessage(int sockfd, char* msg);
-		bool SendImage(IMAGE image);
-		bool SendEventSignal(int sockfd, EVENT_SIGNAL);
+		bool SendImage( IMAGE image);
+		bool SendEventSignal();
 		bool SendFirstMessage(int sockfd);
 
 };

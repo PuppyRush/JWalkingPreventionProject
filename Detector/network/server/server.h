@@ -20,7 +20,8 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-#include "../../network/network.h"
+#include "../network.h"
+#include "../../device/ControlDevice.h"
 
 
 struct THREAD_SERVER_PARAMETER{

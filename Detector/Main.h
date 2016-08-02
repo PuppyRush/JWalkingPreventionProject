@@ -10,8 +10,7 @@
 
 #include <iostream>
 #include <pthread.h>
-//#include "device/ConfirmDevice.h"
-//#include "device/ConnectDevice.h"
+#include "device/CameraCapture.cpp"
 #include "detector/Detector.h"
 #include "network/client/client.h"
 #include "network/server/server.h"

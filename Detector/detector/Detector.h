@@ -32,12 +32,12 @@
 #include "DetectLine.h"
 //#include "../Queue.h"
 #include "../network/client/NetworkToMonitor.h"
+#include "../device/ControlDevice.h"
 
-struct THREAD_DETECTOR_BEGIN_PARAMETER{
-	void* context;
-	int frame_step;
-	NTM* ntm;
-};
+#define DETECT_DISTANCE_STD	200
+#define NOTOBJECT_HUMAN_COUNT_STD	3
+#define	NOTOBJECT_COUNT_STD	5
+#define	NOTOBJECT_RECT_STD	10
 
 template<class T>
 class TypedMat
@@ -112,13 +112,30 @@ void TypedMat<T>::Attach(const IplImage& m)
 }
 
 using namespace cv;
+struct THREAD_DETECTOR_BEGIN_PARAMETER{
+	void* context;
+	int frame_step;
+	int udpSock;
+	NTM* ntm;
+};
+
+struct testifyObject{
+
+	Point p;
+	int count;
+	bool isChange;
+	int maybeHumanCount;
+};
 
 class Detector{
 
 	private:
 
+		pthread_t th_timer;
+		vector<testifyObject> notObject;
 		NTM *ntm;
 		int frame_step;
+		int udpSock;
 		bool isActivitedCam;
 		String filePath;
 		string windowName;
@@ -127,11 +144,16 @@ class Detector{
 		struct timeval startTime, endTime;
 		struct timezone tz;
 
+		bool isAlarming;
+		bool isDetecting;
 
 	public:
 
 		Detector(String filepath){
 
+			notObject.reserve(1000);
+			isAlarming = false;
+			isDetecting = false;
 			filePath = filepath;
 			isActivitedCam = false;
 			windowName = "Detector";
@@ -140,6 +162,9 @@ class Detector{
 		}
 		Detector(){
 
+			notObject.reserve(1000);
+			isAlarming = false;
+			isDetecting = false;
 			isActivitedCam = true;
 			windowName = "Detector";
 
@@ -149,12 +174,18 @@ class Detector{
 
 		bool QueryPerformanceFrequency(int64_t *frequency);
 		bool QueryPerformanceCounter(int64_t *performance_count);
-		void *BeginDectect(int step, NetworkToMonitor *ntm);
+		void *BeginDectect(int step, NetworkToMonitor *ntm, int udpSock);
 		static void* getBeginDectect(void* th){
 			THREAD_DETECTOR_BEGIN_PARAMETER *str = (THREAD_DETECTOR_BEGIN_PARAMETER *)th;
-			return ( (Detector *)str->context)->BeginDectect(str->frame_step, (NTM *)str->ntm);
+			return ( (Detector *)str->context)->BeginDectect(str->frame_step, (NTM *)str->ntm, str->udpSock);
 		}
 		bool detect_haarcascades(VideoCapture *vc);
+		bool RemoveNotHumanObject(vector<Rect>*);
 		IMAGE MatToImageArray(const Mat* frame);
+		bool DetectOnlyHuman(vector<Rect> *, LANE*);
+		void *AlramTimer();
+		static void* getBeginForTimer(void* th){
+			return ( (Detector *)th)->AlramTimer();
+		}
 
 };
