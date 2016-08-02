@@ -16,7 +16,9 @@
 class NetworkToMonitor {
 
 	public:
-
+		int myNumber;
+		int tcpPort, udpPort;
+		char monitorIp[30];
 		SocketInfo rsock;
 		SocketInfo msock;
 		int udpSock, monitorSock;

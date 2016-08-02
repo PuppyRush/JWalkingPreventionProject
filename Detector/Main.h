@@ -16,6 +16,6 @@
 #include "network/server/server.h"
 
 
-
+char** readFile();
 
 #endif /* DETECTOR_DETECTRACKER_H_ */

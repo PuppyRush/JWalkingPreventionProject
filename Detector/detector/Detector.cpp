@@ -40,7 +40,7 @@ bool Detector::QueryPerformanceCounter(int64_t *performance_count)
     return true;
 }
 
-void *Detector::BeginDectect( int frame_step, NetworkToMonitor *ntm, int u)
+void *Detector::BeginDectect(NetworkToMonitor *ntm, int u)
 {
 
 
@@ -48,7 +48,6 @@ void *Detector::BeginDectect( int frame_step, NetworkToMonitor *ntm, int u)
 	this->udpSock = u;
 	this->ntm = ntm;
 
-	this->frame_step = frame_step;
 	VideoCapture *image = NULL;
 
 	if(isActivitedCam)
@@ -96,7 +95,7 @@ bool Detector::detect_haarcascades(VideoCapture *vc)
 */
 
 	int gr_thr = 40;
-	double scale_step = 1.1;
+	double scalestep = scale_step;
 	Size min_obj_sz(40,100);
 	Size max_obj_sz(90,180);
 
@@ -110,7 +109,7 @@ bool Detector::detect_haarcascades(VideoCapture *vc)
 	while(1)
 	{
 
-		for(int i=0 ; i < 5 ; i++)
+		for(int i=0 ; i < frame_jump ; i++)
 			*vc >> frame;
 
 		// input image
@@ -129,15 +128,19 @@ bool Detector::detect_haarcascades(VideoCapture *vc)
 
 		// detect
 		vector<Rect> found;
-		detector.detectMultiScale(grayed_frame, found, scale_step, gr_thr, 0, min_obj_sz, max_obj_sz);
+		detector.detectMultiScale(grayed_frame, found, scalestep, gr_thr, 0, min_obj_sz, max_obj_sz);
 
 		// processing time (fps)
-		//removeNotHumanObject(&found);
-
-		if(!isAlarming && DetectOnlyHuman(&found, lane)){
-			ntm->SendEventSignal();
-			DeviceController::DoDevice();
+		if(countForLearning <= LEARNING_COUNT)
+			LearningNotObject(&found);
+		else{
+			found = RemoveNotHumanObject(found);
+			if(DetectOnlyHuman(&found, lane)){
+				ntm->SendEventSignal();
+				DeviceController::DoDevice();
+			}
 		}
+
 		// draw results (bounding boxes)
 		for(int i=0; i<(int)found.size(); i++)
 			rectangle(frame, found[i], Scalar(0,255,0), 2);
@@ -170,6 +173,9 @@ bool Detector::detect_haarcascades(VideoCapture *vc)
 
 bool Detector::DetectOnlyHuman(vector<Rect> *found, LANE *lane){
 
+	if(isAlarming)
+		return false;
+
 	int std_x = (lane->begin_x+lane->end_x)/2;
 	if(isDetecting == false)
 		for(vector<Rect>::iterator it = found->begin() ; it != found->end() ; it++){
@@ -179,7 +185,7 @@ bool Detector::DetectOnlyHuman(vector<Rect> *found, LANE *lane){
 		}
 	else{
 		for(vector<Rect>::iterator it = found->begin() ; it != found->end() ; it++){
-			if(std_x-DETECT_DISTANCE_STD >= it->x){
+			if(std_x-DETECT_DISTANCE_STD >= it->x && std_x-DETECT_DISTANCE_STD*2 <= it->x  ){
 				isAlarming = true;
 				isDetecting = false;
 				return true;
@@ -205,80 +211,94 @@ IMAGE Detector::MatToImageArray(const Mat* frame){
 
 }
 
-bool Detector::RemoveNotHumanObject(vector<Rect> *found){
+vector<Rect> Detector::RemoveNotHumanObject(vector<Rect> found){
+
+	Point notObj_p;
+	Point found_p;
+
+	for(vector<testifyObject>::iterator not_iter = notObject.begin(); not_iter != notObject.end(); not_iter++ ){
+		notObj_p = (*not_iter).p;
+		for(vector<Rect>::iterator found_iter = found.begin(); found_iter != found.end(); ){
+			found_p.x = found_iter->x;
+			found_p.y = found_iter->y;
+
+			if((notObj_p.x-NOTOBJECT_RECT_STD <= found_p.x && notObj_p.x+NOTOBJECT_RECT_STD >= found_p.x  )&&
+				(notObj_p.y-NOTOBJECT_RECT_STD <= found_p.y && notObj_p.y+NOTOBJECT_RECT_STD >= found_p.y  )){
+					found_iter = found.erase(found_iter);
+				}
+			else
+				found_iter++;
+
+		}
+
+	}
+
+	return found;
+
+}
+
+void Detector::LearningNotObject( vector<Rect> *found){
+
+	int check=0;
+	Point comp_p;
+	Point dest_p;
+	Point temp_p;
 
 	if(notObject.size()==0)
 	{
 		for(vector<Rect>::iterator found_iter = found->begin(); found_iter != found->end(); found_iter++ ){
 			testifyObject str;
 			str.count = 0;
-			str.isChange = true;
 			str.p.x =  found_iter->x;
 			str.p.y =  found_iter->y;
 			notObject.push_back(str);
 		}
+		return;
 	}
 
+	for(vector<testifyObject>::iterator not_iter = notObject.begin(); not_iter != notObject.end(); not_iter++){
+		dest_p = (*not_iter).p;
+		for(vector<Rect>::iterator found_iter = found->begin(); found_iter != found->end(); found_iter++ ){
 
-	int check=0;
-	for(vector<Rect>::iterator found_iter = found->begin(); found_iter != found->end(); found_iter++ ){
-		for(vector<testifyObject>::iterator not_iter = notObject.begin(); not_iter != notObject.end(); ){
 
-			Point comp_p;
 			comp_p.x = (*found_iter).x;
 			comp_p.y = (*found_iter).y;
-			Point dest_p = (*not_iter).p;
-			//기존에 있는데 겹치고 횟수 모자람
-			if((*not_iter).count <= NOTOBJECT_COUNT_STD &&
-				(dest_p.x-NOTOBJECT_RECT_STD <= comp_p.x && dest_p.x+NOTOBJECT_RECT_STD >= comp_p.x  )&&
-				(dest_p.y-NOTOBJECT_RECT_STD <= comp_p.y && dest_p.y+NOTOBJECT_RECT_STD >= comp_p.y  )){
-				(*not_iter).count++;
-				(*not_iter).isChange = true;
-				++not_iter;
+
+
+			if((dest_p.x-NOTOBJECT_RECT_STD <= comp_p.x && dest_p.x+NOTOBJECT_RECT_STD >= comp_p.x  )&&
+			(dest_p.y-NOTOBJECT_RECT_STD <= comp_p.y && dest_p.y+NOTOBJECT_RECT_STD >= comp_p.y  )){
+				not_iter->count++;
+				continue;
 			}
-			//기존에 있는데 겹치고 횟수 초과
-			else if((*not_iter).count >= NOTOBJECT_COUNT_STD &&
-				(dest_p.x-NOTOBJECT_RECT_STD <= comp_p.x && dest_p.x+NOTOBJECT_RECT_STD >=  comp_p.x )&&
-				(dest_p.y-NOTOBJECT_RECT_STD <= comp_p.y && dest_p.y+NOTOBJECT_RECT_STD >=  comp_p.y )){
-				found_iter = found->erase(found_iter);
-				(*not_iter).isChange = true;
-				++not_iter;
-			}
-			//기존에 있는 객체와 맞는게 없다면 새로추가
-			else{
-				not_iter->isChange = false;
-				check++;
-				++not_iter;
-			}
+
+			check++;
+
 		}
-		if(check == notObject.size()){
+		//새로운
+		if( check == notObject.size() ){
 			testifyObject str;
-			str.maybeHumanCount = 0;
 			str.count = 0;
-			str.isChange = true;
-			str.p.x = found_iter->x;
-			str.p.y = found_iter->y;
+			str.p.x = comp_p.x;
+			str.p.y = comp_p.y;
 			notObject.push_back(str);
 
 		}
 
-		check=0;
-
+		check =0;
 	}
 
-	for(vector<testifyObject>::iterator not_iter = notObject.begin(); not_iter != notObject.end(); ){
-		if(not_iter->isChange == false){
-			if(not_iter->maybeHumanCount >= NOTOBJECT_HUMAN_COUNT_STD)
-				not_iter =  notObject.erase(not_iter);
-			else{
-				not_iter->maybeHumanCount++;
+	if(countForLearning == LEARNING_COUNT-1)
+		for(vector<testifyObject>::iterator not_iter = notObject.begin(); not_iter != notObject.end(); ){
+
+			if(not_iter->count < NOTOBJECT_COUNT_STD)
+				not_iter = notObject.erase(not_iter);
+			else
 				not_iter++;
-			}
-		}
-		else
-			not_iter++;
 
-	}
+
+		}
+
+	countForLearning++;
 
 }
 
@@ -286,8 +306,9 @@ void *Detector::AlramTimer(){
 
 	while(true){
 		if(isAlarming){
-			sleep(5000);
+			sleep(5);
 			isAlarming = false;
+
 
 		}
 	}

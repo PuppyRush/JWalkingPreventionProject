@@ -155,8 +155,6 @@ struct SEND_JWALKING_IMAGE{
 
   };
 
- static volatile int myNumber = 4;
-
 /* class Network{
 
  	 private:

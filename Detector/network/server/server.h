@@ -24,7 +24,7 @@
 #include "../../device/ControlDevice.h"
 
 
-struct THREAD_SERVER_PARAMETER{
+struct THREAD_RECEIVE_PARAMETER{
 	 void* context;
 	 int sockfd;
 
@@ -33,6 +33,7 @@ struct THREAD_SERVER_PARAMETER{
 struct THREAD_SERVER_BEGIN_PARAMETER{
 
 	void* context;
+	int myServerPort;
 
 };
 
@@ -40,10 +41,11 @@ struct THREAD_SERVER_BEGIN_PARAMETER{
 class Server{
 
 
-	private:
+	public:
 
 		SocketInfo rsock, msock;
 		 int myNumber;
+		 int myServerPort;
 
 	public:
 
@@ -51,15 +53,15 @@ class Server{
 
 		}
 
-		void *BeginServer();
+		void *BeginServer(int myNumberPort);
 		static void* getBeginServer(void* th){
-			THREAD_NETWORK_BEGIN_PARAMETER *str = (THREAD_NETWORK_BEGIN_PARAMETER *)th;
-			return ( (Server *)str->context)->BeginServer();
+			THREAD_SERVER_BEGIN_PARAMETER *str = (THREAD_SERVER_BEGIN_PARAMETER *)th;
+			return ( (Server *)str->context)->BeginServer( str->myServerPort );
 		}
 
 		void *Receive(int sockfd);
 		static void* getReceive(void* th){
-			THREAD_SERVER_PARAMETER *str = (THREAD_SERVER_PARAMETER *)th;
+			THREAD_RECEIVE_PARAMETER *str = (THREAD_RECEIVE_PARAMETER *)th;
 			return ( (Server *)str->context)->Receive( str->sockfd );
 		}
 		void *CheckQueue(void);

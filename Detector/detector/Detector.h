@@ -34,10 +34,9 @@
 #include "../network/client/NetworkToMonitor.h"
 #include "../device/ControlDevice.h"
 
-#define DETECT_DISTANCE_STD	200
-#define NOTOBJECT_HUMAN_COUNT_STD	3
-#define	NOTOBJECT_COUNT_STD	5
-#define	NOTOBJECT_RECT_STD	10
+#define LEARNING_COUNT	20
+#define	NOTOBJECT_COUNT_STD	2
+#define	NOTOBJECT_RECT_STD	50
 
 template<class T>
 class TypedMat
@@ -112,6 +111,7 @@ void TypedMat<T>::Attach(const IplImage& m)
 }
 
 using namespace cv;
+
 struct THREAD_DETECTOR_BEGIN_PARAMETER{
 	void* context;
 	int frame_step;
@@ -123,18 +123,22 @@ struct testifyObject{
 
 	Point p;
 	int count;
-	bool isChange;
-	int maybeHumanCount;
+
 };
 
 class Detector{
 
-	private:
+	public:
 
 		pthread_t th_timer;
 		vector<testifyObject> notObject;
+		vector<testifyObject> tempObject;
 		NTM *ntm;
-		int frame_step;
+		int countForLearning;
+		int frame_jump;
+		float scale_step;
+		int thresh;
+		int DETECT_DISTANCE_STD;
 		int udpSock;
 		bool isActivitedCam;
 		String filePath;
@@ -152,13 +156,14 @@ class Detector{
 		Detector(String filepath){
 
 			notObject.reserve(1000);
+			tempObject.reserve(100);
 			isAlarming = false;
 			isDetecting = false;
 			filePath = filepath;
 			isActivitedCam = false;
 			windowName = "Detector";
 
-			frame_step = 2;
+
 		}
 		Detector(){
 
@@ -168,19 +173,19 @@ class Detector{
 			isActivitedCam = true;
 			windowName = "Detector";
 
-			frame_step = 2;
 		}
 		~Detector(){;}
 
 		bool QueryPerformanceFrequency(int64_t *frequency);
 		bool QueryPerformanceCounter(int64_t *performance_count);
-		void *BeginDectect(int step, NetworkToMonitor *ntm, int udpSock);
+		void *BeginDectect(NetworkToMonitor *ntm, int udpSock);
 		static void* getBeginDectect(void* th){
 			THREAD_DETECTOR_BEGIN_PARAMETER *str = (THREAD_DETECTOR_BEGIN_PARAMETER *)th;
-			return ( (Detector *)str->context)->BeginDectect(str->frame_step, (NTM *)str->ntm, str->udpSock);
+			return ( (Detector *)str->context)->BeginDectect((NTM *)str->ntm, str->udpSock);
 		}
 		bool detect_haarcascades(VideoCapture *vc);
-		bool RemoveNotHumanObject(vector<Rect>*);
+		vector<Rect> RemoveNotHumanObject(vector<Rect>);
+		void LearningNotObject( vector<Rect>*);
 		IMAGE MatToImageArray(const Mat* frame);
 		bool DetectOnlyHuman(vector<Rect> *, LANE*);
 		void *AlramTimer();

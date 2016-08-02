@@ -1,7 +1,7 @@
 #include "../server/server.h"
 
 
-void *Server::BeginServer()
+void *Server::BeginServer(int myNumberPort)
     {
 
 
@@ -25,14 +25,14 @@ void *Server::BeginServer()
 
 	    server_addr.sin_family = AF_INET;
 	    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	    server_addr.sin_port = htons(MYPORT);
+	    server_addr.sin_port = htons(myServerPort);
 	    //server_addr 셋팅
 
 	    if(bind(server_fd, (struct sockaddr *)&server_addr, sizeof(server_addr)) <0)
 	    {//bind() 호출
 	        printf("Server : Can't bind local address.\n");
 	        exit(0);
-	    }
+	    	    }
 
 	    if(listen(server_fd, 5) < 0)
 	    {//소켓을 수동 대기모드로 설정
@@ -53,7 +53,7 @@ void *Server::BeginServer()
 			}
 
 			pthread_t sock_th;
-			THREAD_SERVER_PARAMETER *par = (THREAD_SERVER_PARAMETER *) malloc(sizeof(THREAD_SERVER_PARAMETER));
+			THREAD_RECEIVE_PARAMETER *par = (THREAD_RECEIVE_PARAMETER *) malloc(sizeof(THREAD_RECEIVE_PARAMETER));
 			par->context = this;
 			par->sockfd = client_fd;
 			pthread_create(&sock_th, NULL, &Server::getReceive , (void *)par);
@@ -140,6 +140,8 @@ bool Server::TranslateMsg(int sockfd, char* buf){
 
 	return true;
 }
+
+
 /*
 bool Server::ReuqestWhoisyou(int sockfd){
 

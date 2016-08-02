@@ -31,7 +31,7 @@ void *NetworkToMonitor::BeginForMonitor(){
 	}
 
 	their_addr.sin_family = AF_INET;      /* host byte order */
-	their_addr.sin_port = htons(9090);    /* short, network byte order */
+	their_addr.sin_port = htons(tcpPort);    /* short, network byte order */
 	their_addr.sin_addr = *((struct in_addr *)he->h_addr);
 	bzero(&(their_addr.sin_zero), 8);     /* zero the rest of the struct */
 	int err;
