@@ -16,8 +16,6 @@ int main(int argc, char** argv){
 
 	char **texts =  readFile();
 
-	cout << "\n CV VERSION IS : " CV_VERSION << std::endl;
-
 
 /////클라이언트 접속하기
 
@@ -65,7 +63,7 @@ int main(int argc, char** argv){
 	//th_str_detector.frame_step = frame_step;
 	sleep(1);
 	pthread_create(&detctor_th, NULL, &Detector::getBeginDectect , &th_str_detector);
-	pthread_create(&timer_th, NULL, &Detector::getBeginForTimer ,  &dect);
+	//pthread_create(&timer_th, NULL, &Detector::getBeginForTimer ,  &dect);
 	//pthread_join(server_th, NULL);
 	pthread_join(detctor_th, NULL);
 

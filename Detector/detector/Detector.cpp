@@ -124,10 +124,10 @@ bool Detector::detect_haarcascades(VideoCapture *vc)
 		cvtColor(frame,grayed_frame,CV_BGR2GRAY);
 		equalizeHist(grayed_frame, grayed_frame);
 
-		QueryPerformanceCounter((int64_t*)&start);
+		//QueryPerformanceCounter((int64_t*)&start);
 
 		// detect
-		vector<Rect> found;
+		/*vector<Rect> found;
 		detector.detectMultiScale(grayed_frame, found, scalestep, gr_thr, 0, min_obj_sz, max_obj_sz);
 
 		// processing time (fps)
@@ -139,21 +139,21 @@ bool Detector::detect_haarcascades(VideoCapture *vc)
 				ntm->SendEventSignal();
 				DoDevice();
 			}
-		}
+		}*/
 
 		// draw results (bounding boxes)
-		for(int i=0; i<(int)found.size(); i++)
-			rectangle(frame, found[i], Scalar(0,255,0), 2);
+		/*for(int i=0; i<(int)found.size(); i++)
+			rectangle(frame, found[i], Scalar(0,255,0), 2);*/
 
 
 
-		QueryPerformanceCounter((int64_t*)&finish);
+		/*QueryPerformanceCounter((int64_t*)&finish);
 		int counter = (int)found.size();
 		double fps = freq / double(finish - start + 1);
 		char fps_str[20];
 		sprintf(fps_str, "FPS: %.1lf / counter:%d", fps,counter);
 		putText(frame, fps_str, Point(5, 35), FONT_HERSHEY_SIMPLEX, 1., Scalar(0,255,0), 2);
-		putText(frame, fps_str, Point(5, 35), FONT_HERSHEY_SIMPLEX, 1., Scalar(0,255,0), 2);
+		putText(frame, fps_str, Point(5, 35), FONT_HERSHEY_SIMPLEX, 1., Scalar(0,255,0), 2);*/
 
 
 		// display

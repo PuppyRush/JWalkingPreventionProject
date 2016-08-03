@@ -9,7 +9,6 @@
 #ifndef DETECTOR_DEVICE_CONTROLDEVICE_CPP_
 #define DETECTOR_DEVICE_CONTROLDEVICE_CPP_
 
-#include "../Main.h"
 #include <wiringPi.h>
 
 //red
@@ -25,10 +24,10 @@
 
 
 
-	static void *DoDevice(){
+	void DoDevice(){
 		if (wiringPiSetup () == -1){
 			printf("GPIO설치가 안되어 있습니다.");
-
+			return;
 		}
 		else{
 			pinMode (LED1, OUTPUT) ;
@@ -57,6 +56,7 @@
 			digitalWrite (LED5, 0) ; // Off
 			digitalWrite (LED6, 0) ; // Off
 		}
+
 
 	}
 

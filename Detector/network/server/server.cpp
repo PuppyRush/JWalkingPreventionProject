@@ -132,7 +132,7 @@ bool Server::TranslateMsg(int sockfd, char* buf){
 				int others[2];
 				memcpy(&event, &buf[sizeof(HEADER)] , sizeof(event));
 				memcpy(others, &buf[sizeof(HEADER) + sizeof(event)] , sizeof(int)*2);
-				DoDevice();
+				system("sudo /home/pi/workspace/J*/device/ondevice");
 			}
 		}
 
