@@ -29,10 +29,10 @@
 #include <stddef.h>
 #include <assert.h>
 
+#include "../device/ControlDevice.c"
 #include "DetectLine.h"
 //#include "../Queue.h"
 #include "../network/client/NetworkToMonitor.h"
-#include "../device/ControlDevice.h"
 
 #define LEARNING_COUNT	20
 #define	NOTOBJECT_COUNT_STD	2

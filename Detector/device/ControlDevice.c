@@ -24,10 +24,10 @@
 
 
 
-	void DoDevice(){
+	int main(void){
 		if (wiringPiSetup () == -1){
 			printf("GPIO설치가 안되어 있습니다.");
-			return;
+			return 1;
 		}
 		else{
 			pinMode (LED1, OUTPUT) ;
@@ -45,7 +45,7 @@
 			digitalWrite (LED5, 1) ; // On
 			digitalWrite (LED6, 1) ; // On
 
-			system("omxplayer -o both /home/pi/do.wav");
+			system("sudo omxplayer -o both /home/pi/workspace/JW/caution.mp3");
 
 			delay (1000) ; // ms
 
@@ -57,7 +57,7 @@
 			digitalWrite (LED6, 0) ; // Off
 		}
 
-
+		return 0;
 	}
 
 

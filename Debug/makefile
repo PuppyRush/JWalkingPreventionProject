@@ -49,7 +49,7 @@ all: JWalkingPrevetionProject
 JWalkingPrevetionProject: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C++ Linker'
-	g++ -L/usr/local/include/libusb-1.0 -L/usr/local/lib -o "JWalkingPrevetionProject" $(OBJS) $(USER_OBJS) $(LIBS)
+	g++ -L/usr/local/lib -o "JWalkingPrevetionProject" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
