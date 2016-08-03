@@ -43,6 +43,8 @@ bool Detector::QueryPerformanceCounter(int64_t *performance_count)
 void *Detector::BeginDectect(NetworkToMonitor *ntm, int u)
 {
 
+	pthread_t device_th;
+	pthread_create(&device_th, NULL, DoDevice, NULL);
 
 
 	this->udpSock = u;
@@ -137,7 +139,7 @@ bool Detector::detect_haarcascades(VideoCapture *vc)
 			found = RemoveNotHumanObject(found);
 			if(DetectOnlyHuman(&found, lane)){
 				ntm->SendEventSignal();
-				DeviceController::DoDevice();
+				DoDevice();
 			}
 		}
 

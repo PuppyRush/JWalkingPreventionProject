@@ -1,10 +1,13 @@
 /*
  * mian.cpp
+
  *
  *  Created on: 2016. 7. 18.
  *      Author: cmk
  */
-
+#include "detector/Detector.h"
+#include "network/client/client.h"
+#include "network/server/server.h"
 #include "Main.h"
 
 
@@ -18,17 +21,17 @@ int main(int argc, char** argv){
 
 /////클라이언트 접속하기
 
-	Client client;
+	pthread_t client_th;
 	NetworkToMonitor *ntm = new NTM();
 
 	ntm->myNumber = atoi(texts[0]);
 	memcpy(ntm->monitorIp, texts[1], strlen(texts[1]));
 	ntm->tcpPort = atoi(texts[2]);
 	ntm->udpPort = atoi(texts[3]);
-	sleep(1);
-	client.BeginClient(ntm);
-
 	int udpSock = ntm->udpSock;
+
+	pthread_create(&client_th, NULL, &NetworkToMonitor::getBeginForMonitor , ntm);
+
 
 /////주변 라즈베리 탐색
 

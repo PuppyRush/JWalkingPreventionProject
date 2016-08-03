@@ -9,11 +9,10 @@
 #define DETECTOR_MAIN_H_
 
 #include <iostream>
+#include <fstream>
 #include <pthread.h>
 #include "device/CameraCapture.cpp"
-#include "detector/Detector.h"
-#include "network/client/client.h"
-#include "network/server/server.h"
+
 
 
 char** readFile();
