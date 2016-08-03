@@ -31,8 +31,8 @@
 
 #include "DetectLine.h"
 //#include "../Queue.h"
-#include "../network/client/NetworkToMonitor.h"
 #include "../device/ControlDevice.h"
+#include "../network/client/NetworkToMonitor.c"
 
 #define LEARNING_COUNT	20
 #define	NOTOBJECT_COUNT_STD	2
@@ -133,7 +133,6 @@ class Detector{
 		pthread_t th_timer;
 		vector<testifyObject> notObject;
 		vector<testifyObject> tempObject;
-		NTM *ntm;
 		int countForLearning;
 		int frame_jump;
 		float scale_step;
@@ -178,10 +177,10 @@ class Detector{
 
 		bool QueryPerformanceFrequency(int64_t *frequency);
 		bool QueryPerformanceCounter(int64_t *performance_count);
-		void *BeginDectect(NetworkToMonitor *ntm, int udpSock);
+		void *BeginDectect(int udpSock);
 		static void* getBeginDectect(void* th){
 			THREAD_DETECTOR_BEGIN_PARAMETER *str = (THREAD_DETECTOR_BEGIN_PARAMETER *)th;
-			return ( (Detector *)str->context)->BeginDectect((NTM *)str->ntm, str->udpSock);
+			return ( (Detector *)str->context)->BeginDectect(str->udpSock);
 		}
 		bool detect_haarcascades(VideoCapture *vc);
 		vector<Rect> RemoveNotHumanObject(vector<Rect>);
