@@ -21,8 +21,6 @@
 #include <arpa/inet.h>
 #include <pthread.h>
 #include "../network.h"
-#include "../../device/ControlDevice.h"
-
 
 struct THREAD_RECEIVE_PARAMETER{
 	 void* context;

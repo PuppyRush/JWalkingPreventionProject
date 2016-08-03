@@ -29,7 +29,6 @@
 #include <stddef.h>
 #include <assert.h>
 
-#include "../device/ControlDevice.c"
 #include "DetectLine.h"
 //#include "../Queue.h"
 #include "../network/client/NetworkToMonitor.h"

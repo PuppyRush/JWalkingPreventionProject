@@ -14,7 +14,7 @@
 
 int main(int argc, char** argv){
 
-	system("sudo gcc /home/pi/workspace/JW/device/ControlDeivce.c -l wriringPi -o control");
+	system("sudo gcc /home/pi/workspace/JW/ControlDeivce.c -l wriringPi -o control");
 
 	char **texts =  readFile();
 

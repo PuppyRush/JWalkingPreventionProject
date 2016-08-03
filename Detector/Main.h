@@ -11,9 +11,6 @@
 #include <iostream>
 #include <fstream>
 #include <pthread.h>
-#include "device/CameraCapture.cpp"
-
-
 
 char** readFile();
 
