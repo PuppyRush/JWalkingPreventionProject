@@ -25,10 +25,11 @@
 
 
 
-	static bool *DoDevice(){
-		if (wiringPiSetup () == -1)
-			printf("GPIO설치가 안되어 있습니다.")
-
+	static void DoDevice(){
+		if (wiringPiSetup () == -1){
+			printf("GPIO설치가 안되어 있습니다.");
+			return;
+		}
 		pinMode (LED1, OUTPUT) ;
 		pinMode (LED2, OUTPUT) ;
 		pinMode (LED3, OUTPUT) ;
@@ -54,7 +55,7 @@
 		digitalWrite (LED4, 0) ; // Off
 		digitalWrite (LED5, 0) ; // Off
 		digitalWrite (LED6, 0) ; // Off
-		return 1 ;
+
 	}
 
 

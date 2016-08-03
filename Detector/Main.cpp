@@ -6,7 +6,6 @@
  *      Author: cmk
  */
 #include "detector/Detector.h"
-#include "network/client/client.h"
 #include "network/server/server.h"
 #include "Main.h"
 
@@ -36,7 +35,7 @@ int main(int argc, char** argv){
 /////주변 라즈베리 탐색
 
 
-	pthread_t server_th, client_th;
+	pthread_t server_th;
 	Server server;
 	server.myServerPort = atoi(texts[4]);
 	server.myNumber = atoi(texts[0]);
