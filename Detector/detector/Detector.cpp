@@ -40,12 +40,13 @@ bool Detector::QueryPerformanceCounter(int64_t *performance_count)
     return true;
 }
 
-void *Detector::BeginDectect( int u)
+void *Detector::BeginDectect(NetworkToMonitor *ntm, int u)
 {
 
 
-	this->udpSock = u;
 
+	this->udpSock = u;
+	this->ntm = ntm;
 
 	VideoCapture *image = NULL;
 
@@ -115,7 +116,7 @@ bool Detector::detect_haarcascades(VideoCapture *vc)
 		*vc >> frame;
 		if(frame.empty()) break;
 
-		SendImage(MatToImageArray(&frame) );
+		ntm->SendImage(MatToImageArray(&frame) );
 
 		lane = dl.beginDetectLine(&frame);
 
@@ -135,7 +136,7 @@ bool Detector::detect_haarcascades(VideoCapture *vc)
 		else{
 			found = RemoveNotHumanObject(found);
 			if(DetectOnlyHuman(&found, lane)){
-				SendEventSignal();
+				ntm->SendEventSignal();
 				DoDevice();
 			}
 		}

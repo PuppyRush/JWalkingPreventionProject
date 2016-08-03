@@ -6,6 +6,7 @@
  *      Author: cmk
  */
 #include "detector/Detector.h"
+#include "network/client/NetworkToMonitor.h"
 #include "network/server/server.h"
 #include "Main.h"
 
@@ -21,15 +22,15 @@ int main(int argc, char** argv){
 /////클라이언트 접속하기
 
 	pthread_t client_th;
+	NetworkToMonitor *ntm = new NTM();
 
-	myNumber = atoi(texts[0]);
-	memcpy(monitorIp, texts[1], strlen(texts[1]));
-	tcpPort = atoi(texts[2]);
-	udpPort = atoi(texts[3]);
-	int udpSock = udpSock;
+	ntm->myNumber = atoi(texts[0]);
+	memcpy(ntm->monitorIp, texts[1], strlen(texts[1]));
+	ntm->tcpPort = atoi(texts[2]);
+	ntm->udpPort = atoi(texts[3]);
+	int udpSock = ntm->udpSock;
 
-	pthread_create(&client_th, NULL, &BeginForMonitor , NULL);
-
+	pthread_create(&client_th, NULL, &NetworkToMonitor::getBeginForMonitor , ntm);
 
 
 /////주변 라즈베리 탐색
@@ -59,10 +60,10 @@ int main(int argc, char** argv){
 	dect.DETECT_DISTANCE_STD = atoi(texts[8]);
 	THREAD_DETECTOR_BEGIN_PARAMETER th_str_detector;
 	th_str_detector.context = (void *)&dect;
+	th_str_detector.ntm = ntm;
 	th_str_detector.udpSock = udpSock;
 	//th_str_detector.frame_step = frame_step;
 	sleep(1);
-
 	pthread_create(&detctor_th, NULL, &Detector::getBeginDectect , &th_str_detector);
 	pthread_create(&timer_th, NULL, &Detector::getBeginForTimer ,  &dect);
 	//pthread_join(server_th, NULL);

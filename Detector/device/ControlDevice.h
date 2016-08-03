@@ -25,36 +25,38 @@
 
 
 
-	static void DoDevice(){
+	static void *DoDevice(){
 		if (wiringPiSetup () == -1){
 			printf("GPIO설치가 안되어 있습니다.");
-			return;
+
 		}
-		pinMode (LED1, OUTPUT) ;
-		pinMode (LED2, OUTPUT) ;
-		pinMode (LED3, OUTPUT) ;
-		pinMode (LED4, OUTPUT) ;
-		pinMode (LED5, OUTPUT) ;
-		pinMode (LED6, OUTPUT) ;
+		else{
+			pinMode (LED1, OUTPUT) ;
+			pinMode (LED2, OUTPUT) ;
+			pinMode (LED3, OUTPUT) ;
+			pinMode (LED4, OUTPUT) ;
+			pinMode (LED5, OUTPUT) ;
+			pinMode (LED6, OUTPUT) ;
 
 
-		digitalWrite (LED1, 1) ; // On
-		digitalWrite (LED2, 1) ; // On
-		digitalWrite (LED3, 1) ; // On
-		digitalWrite (LED4, 1) ; // On
-		digitalWrite (LED5, 1) ; // On
-		digitalWrite (LED6, 1) ; // On
+			digitalWrite (LED1, 1) ; // On
+			digitalWrite (LED2, 1) ; // On
+			digitalWrite (LED3, 1) ; // On
+			digitalWrite (LED4, 1) ; // On
+			digitalWrite (LED5, 1) ; // On
+			digitalWrite (LED6, 1) ; // On
 
-		system("omxplayer -o both /home/pi/do.wav");
+			system("omxplayer -o both /home/pi/do.wav");
 
-		delay (1000) ; // ms
+			delay (1000) ; // ms
 
-		digitalWrite (LED1, 0) ; // Off
-		digitalWrite (LED2, 0) ; // Off
-		digitalWrite (LED3, 0) ; // Off
-		digitalWrite (LED4, 0) ; // Off
-		digitalWrite (LED5, 0) ; // Off
-		digitalWrite (LED6, 0) ; // Off
+			digitalWrite (LED1, 0) ; // Off
+			digitalWrite (LED2, 0) ; // Off
+			digitalWrite (LED3, 0) ; // Off
+			digitalWrite (LED4, 0) ; // Off
+			digitalWrite (LED5, 0) ; // Off
+			digitalWrite (LED6, 0) ; // Off
+		}
 
 	}
 
