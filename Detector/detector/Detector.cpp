@@ -105,55 +105,55 @@ bool Detector::detect_haarcascades(VideoCapture *vc)
 	int64 freq,start,finish;
 	QueryPerformanceFrequency((int64_t*)&freq);
 
-
+char str[100] = {0};
 	while(1)
 	{
 
 		for(int i=0 ; i < frame_jump ; i++)
+				*vc >> frame;
+
+			// input image
 			*vc >> frame;
+			if(frame.empty()) break;
 
-		// input image
-		*vc >> frame;
-		if(frame.empty()) break;
+			//ntm->SendImage(MatToImageArray(&frame) );
 
-		ntm->SendImage(MatToImageArray(&frame) );
+			lane = dl.beginDetectLine(&frame);
 
-		lane = dl.beginDetectLine(&frame);
+			Mat grayed_frame;
+			cvtColor(frame,grayed_frame,CV_BGR2GRAY);
+			equalizeHist(grayed_frame, grayed_frame);
 
-		Mat grayed_frame;
-		cvtColor(frame,grayed_frame,CV_BGR2GRAY);
-		equalizeHist(grayed_frame, grayed_frame);
+			QueryPerformanceCounter((int64_t*)&start);
 
-		//QueryPerformanceCounter((int64_t*)&start);
+			// detect
+			vector<Rect> found;
+			detector.detectMultiScale(grayed_frame, found, scalestep, gr_thr, 0, min_obj_sz, max_obj_sz);
 
-		// detect
-		/*vector<Rect> found;
-		detector.detectMultiScale(grayed_frame, found, scalestep, gr_thr, 0, min_obj_sz, max_obj_sz);
+			// processing time (fps)
+			if(countForLearning <= LEARNING_COUNT)
+				LearningNotObject(&found);
+			else{
+				found = RemoveNotHumanObject(found);
+				if(DetectOnlyHuman(&found, lane)){
 
-		// processing time (fps)
-		if(countForLearning <= LEARNING_COUNT)
-			LearningNotObject(&found);
-		else{
-			found = RemoveNotHumanObject(found);
-			if(DetectOnlyHuman(&found, lane)){
-				ntm->SendEventSignal();
-				DoDevice();
+				}
 			}
-		}*/
+
 
 		// draw results (bounding boxes)
-		/*for(int i=0; i<(int)found.size(); i++)
-			rectangle(frame, found[i], Scalar(0,255,0), 2);*/
+		for(int i=0; i<(int)found.size(); i++)
+			rectangle(frame, found[i], Scalar(0,255,0), 2);
 
 
 
-		/*QueryPerformanceCounter((int64_t*)&finish);
+		QueryPerformanceCounter((int64_t*)&finish);
 		int counter = (int)found.size();
 		double fps = freq / double(finish - start + 1);
 		char fps_str[20];
 		sprintf(fps_str, "FPS: %.1lf / counter:%d", fps,counter);
 		putText(frame, fps_str, Point(5, 35), FONT_HERSHEY_SIMPLEX, 1., Scalar(0,255,0), 2);
-		putText(frame, fps_str, Point(5, 35), FONT_HERSHEY_SIMPLEX, 1., Scalar(0,255,0), 2);*/
+
 
 
 		// display

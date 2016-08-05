@@ -14,7 +14,7 @@
 
 int main(int argc, char** argv){
 
-	system("sudo gcc /home/pi/workspace/JW/ControlDeivce.c -l wriringPi -o control");
+	//system("sudo gcc /home/pi/workspace/JW/ControlDeivce.c -l wriringPi -o control");
 
 	char **texts =  readFile();
 
@@ -30,7 +30,7 @@ int main(int argc, char** argv){
 	ntm->udpPort = atoi(texts[3]);
 	int udpSock = ntm->udpSock;
 
-	pthread_create(&client_th, NULL, &NetworkToMonitor::getBeginForMonitor , ntm);
+	//pthread_create(&client_th, NULL, &NetworkToMonitor::getBeginForMonitor , ntm);
 
 
 /////주변 라즈베리 탐색
@@ -44,7 +44,7 @@ int main(int argc, char** argv){
 	th_str.context = (void *)&server;
 	sleep(1);
 
-	pthread_create(&server_th, NULL, &Server::getBeginServer , &th_str);
+	//pthread_create(&server_th, NULL, &Server::getBeginServer , &th_str);
 
 
 

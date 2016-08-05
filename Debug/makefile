@@ -11,7 +11,6 @@ RM := rm -rf
 -include Detector/network/server/subdir.mk
 -include Detector/network/client/subdir.mk
 -include Detector/network/subdir.mk
--include Detector/device/subdir.mk
 -include Detector/detector/subdir.mk
 -include Detector/subdir.mk
 -include subdir.mk
